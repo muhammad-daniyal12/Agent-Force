@@ -88,7 +88,7 @@ function LivePipeline() {
   const status = approved ? "Approved · reply ready to send on WhatsApp" : stages[step].working;
 
   return (
-    <div className="rounded-3xl bg-white/[0.08] p-6 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.45)] ring-1 ring-white/20 backdrop-blur-md" aria-hidden>
+    <div className="rounded-3xl bg-white/[0.08] p-6 text-left shadow-[0_24px_60px_-20px_rgb(0_0_0/0.45)] ring-1 ring-white/20 backdrop-blur-md" aria-hidden>
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-100/80">Live: how a request is handled</p>
         <span className="flex items-center gap-1.5 text-[11px] font-medium text-teal-100/80">
@@ -183,18 +183,18 @@ function BrandPanel() {
         </div>
       </div>
 
-      <div className="stagger relative my-10 max-w-xl">
+      <div className="stagger relative mx-auto my-10 w-full max-w-xl text-center">
         <h2 className="text-[2.6rem] font-semibold leading-[1.1] tracking-tight text-balance">
           Your AI team for support, stock and sales.{" "}
           <span className="text-lime-300">You stay in charge.</span>
         </h2>
-        <p className="mt-4 max-w-md text-base text-teal-50/85">
+        <p className="mx-auto mt-4 max-w-md text-base text-teal-50/85">
           Agents read customer messages, check stock and draft quotations. Nothing reaches a customer until you approve it.
         </p>
         <div className="mt-8">
           <LivePipeline />
         </div>
-        <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-teal-100/80">
+        <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-teal-100/80">
           <MapPin className="h-3.5 w-3.5" aria-hidden />
           Built for businesses in
           {["Lahore", "Karachi", "Islamabad", "Faisalabad"].map((city) => (
@@ -205,7 +205,7 @@ function BrandPanel() {
         </p>
       </div>
 
-      <dl className="animate-fade-up relative grid grid-cols-3 gap-6 border-t border-white/15 pt-6" style={{ animationDelay: "0.4s" }}>
+      <dl className="animate-fade-up relative mx-auto grid w-full max-w-xl grid-cols-3 gap-6 border-t border-white/15 pt-6 text-center" style={{ animationDelay: "0.4s" }}>
         <div>
           <dt className="sr-only">Time per quotation</dt>
           <dd className="text-2xl font-semibold tracking-tight tabular-nums">

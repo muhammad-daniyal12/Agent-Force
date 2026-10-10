@@ -178,24 +178,25 @@ export class BusinessStore {
     note: string | undefined,
     transactionId: string,
   ) {
-    const result = await this.db.updateRows<BusinessRow>({
-      databaseId: this.config.databaseId,
-      tableId: this.config.quotations,
-      queries: [
-        Query.equal("owner_user_id", this.ownerId),
-        Query.equal("$id", id),
-        Query.equal("status", "pending"),
-      ],
-      data: {
+    // Review state is verified from the owner's quotation in this same
+    // transaction. Update the one known row by ID instead of making a bulk
+    // update request whose filtered row count can report zero in production.
+    // Concurrent commits on the same quotation conflict transactionally,
+    // so only one approval can commit inventory deductions.
+    const current = await this.get("quotations", id, transactionId);
+    if (current.status !== "pending")
+      throw new ApiError(409, "Quotation has already been reviewed.");
+    await this.update(
+      "quotations",
+      id,
+      {
         status,
         reviewerNote: note ?? null,
         reviewer_user_id: this.ownerId,
         reviewed_at: new Date().toISOString(),
       },
       transactionId,
-    });
-    if (result.rows.length !== 1)
-      throw new ApiError(409, "Quotation has already been reviewed.");
+    );
   }
 
   async decrementStock(id: string, quantity: number, transactionId: string) {

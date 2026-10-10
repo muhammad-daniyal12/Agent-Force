@@ -226,6 +226,23 @@ test("the full fallback demo respects DTOs, approval, stock, dashboard and activ
   );
   assert.equal(reviewed.status, "approved");
   assert.equal(reviewed.reviewerNote, "Approved by owner");
+  // Regression: approval updates exactly the targeted row, not a bulk
+  // filtered collection that may return zero rows on live Appwrite Cloud.
+  const quotationMutations = fixture.calls.filter((call) =>
+    call.method === "PATCH" &&
+    call.path.startsWith("/tablesdb/agentforce/tables/quotations/rows"),
+  );
+  assert(
+    quotationMutations.some((call) =>
+      call.path === `/tablesdb/agentforce/tables/quotations/rows/${quote.id}`),
+    "approval must use targeted single-row PATCH",
+  );
+  assert(
+    quotationMutations.every((call) =>
+      call.path !== "/tablesdb/agentforce/tables/quotations/rows"),
+    "approval must not rely on bulk updateRows matching",
+  );
+
   assert.equal(fixture.rows.get("products/mouse")!.stock, 110);
   assert.equal(fixture.rows.get("products/hub")!.stock, 13);
   await body(

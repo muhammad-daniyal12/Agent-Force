@@ -2,38 +2,38 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Mint & Lime: soft mint base, deep teal actions, lime highlights; agents keep their own colours. */
+/* Emerald: cool neutral base, vibrant emerald actions, one vivid colour per agent. */
 :root {
-  --bg: #f1f8f4;
+  --bg: #f4f6f9;
   --surface: #ffffff;
-  --surface-2: #eaf4ee;
-  --border: #d7e8de;
-  --border-strong: #bfd8ca;
-  --fg: #0b2a22;
-  --muted: #4d6a5e;
-  --subtle: #85a194;
+  --surface-2: #eff2f6;
+  --border: #e2e7ee;
+  --border-strong: #cdd5df;
+  --fg: #0f172a;
+  --muted: #586274;
+  --subtle: #929db0;
 
-  /* Deep teal keeps white button text above 4.5:1 contrast. */
-  --primary: #0f766e;
+  --primary: #059669;
   --primary-fg: #ffffff;
-  --primary-soft: #d5f3ec;
+  --primary-soft: #e3f7ef;
 
-  --brand: #0f766e;
-  --brand-soft: #d5f3ec;
+  --brand: #059669;
+  --brand-soft: #e3f7ef;
 
-  --lime: #4d7c0f;
-  --lime-bright: #a3e635;
-  --lime-soft: #ecfccb;
+  /* Accent used for small highlights (kept as a token so screens don't hard-code it). */
+  --lime: #047857;
+  --lime-bright: #34d399;
+  --lime-soft: #e3f7ef;
 
-  --sidebar: #e6f2ec;
-  --sidebar-border: #d4e6dc;
-  --nav-active: #ffffff;
+  --sidebar: #ffffff;
+  --sidebar-border: #e2e7ee;
+  --nav-active: #e3f7ef;
 
-  --chart-1: #7cc313;
-  --chart-2: #0d9488;
-  /* Quotation chart: lime = generated, teal = approved. Validated with the dataviz palette checks. */
-  --chart-generated: #7cc313;
-  --chart-approved: #0d9488;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  /* Quotation chart: vivid blue = generated, emerald = approved. Validated with the dataviz palette checks. */
+  --chart-generated: #4f7cff;
+  --chart-approved: #12b886;
 
   --support: #2563eb;
   --support-soft: #e6eefd;
@@ -42,47 +42,46 @@
   --sales: #7c3aed;
   --sales-soft: #f0e9fe;
 
-  /* Success is a true green, kept distinct from the teal brand. */
-  --success: #15803d;
-  --success-soft: #dcfce7;
-  --warning: #b45309;
-  --warning-soft: #fef3c7;
+  --success: #059669;
+  --success-soft: #e3f7ef;
+  --warning: #d97706;
+  --warning-soft: #fdf1df;
   --danger: #dc2626;
-  --danger-soft: #fee2e2;
+  --danger-soft: #fdeaea;
 
-  --shadow: 0 1px 2px rgb(11 42 34 / 0.05);
-  --shadow-lg: 0 14px 36px -10px rgb(11 42 34 / 0.18), 0 2px 6px rgb(11 42 34 / 0.05);
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 14px 36px -10px rgb(15 23 42 / 0.18), 0 2px 6px rgb(15 23 42 / 0.05);
 }
 
 .dark {
-  --bg: #0b1411;
-  --surface: #111c18;
-  --surface-2: #172520;
-  --border: #213129;
-  --border-strong: #2e4239;
-  --fg: #e2efe8;
-  --muted: #93ab9f;
-  --subtle: #627a6f;
+  --bg: #0a0d12;
+  --surface: #11151c;
+  --surface-2: #181d26;
+  --border: #222a35;
+  --border-strong: #303a48;
+  --fg: #e8edf4;
+  --muted: #9aa5b5;
+  --subtle: #667286;
 
-  --primary: #2dd4bf;
-  --primary-fg: #042f2a;
-  --primary-soft: #0f2e2a;
+  --primary: #34d399;
+  --primary-fg: #04261a;
+  --primary-soft: #0c2a20;
 
-  --brand: #2dd4bf;
-  --brand-soft: #0f2e2a;
+  --brand: #34d399;
+  --brand-soft: #0c2a20;
 
-  --lime: #a3e635;
-  --lime-bright: #bef264;
-  --lime-soft: #1f2e0c;
+  --lime: #6ee7b7;
+  --lime-bright: #34d399;
+  --lime-soft: #0c2a20;
 
-  --sidebar: #0d1814;
-  --sidebar-border: #1b2a23;
-  --nav-active: #17302a;
+  --sidebar: #11151c;
+  --sidebar-border: #222a35;
+  --nav-active: #0c2a20;
 
-  --chart-1: #6ca815;
-  --chart-2: #1590a8;
-  --chart-generated: #6ca815;
-  --chart-approved: #1590a8;
+  --chart-1: #60a5fa;
+  --chart-2: #34d399;
+  --chart-generated: #5a87ff;
+  --chart-approved: #10a070;
 
   --support: #60a5fa;
   --support-soft: #0f1d35;
@@ -91,8 +90,8 @@
   --sales: #a78bfa;
   --sales-soft: #1d1636;
 
-  --success: #4ade80;
-  --success-soft: #0f2a1a;
+  --success: #34d399;
+  --success-soft: #0c2a20;
   --warning: #fbbf24;
   --warning-soft: #2a1f0a;
   --danger: #f87171;
@@ -280,6 +279,19 @@ body {
 }
 .animate-drift { animation: drift 14s ease-in-out infinite; }
 .animate-drift-slow { animation: drift 20s ease-in-out infinite reverse; }
+
+/* Mini chart bars in the login app preview grow up from the baseline. */
+@keyframes grow-y {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.animate-grow-y {
+  transform-origin: bottom;
+  animation: grow-y 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-grow-y { animation: none; }
+}
 
 /* Wrong password: a short horizontal shake on the form. */
 @keyframes shake {

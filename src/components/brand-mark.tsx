@@ -6,7 +6,7 @@
  * - mono: one colour via `currentColor`, for brand-green or dark tiles; `checkColor`
  *   sets the tick inside the final node so it stays visible.
  */
-export function BrandMark({ className, mono = false, checkColor = "#0f766e" }: { className?: string; mono?: boolean; checkColor?: string }) {
+export function BrandMark({ className, mono = false, checkColor = "#059669" }: { className?: string; mono?: boolean; checkColor?: string }) {
   const c = (color: string) => (mono ? "currentColor" : color);
   return (
     <svg viewBox="0 0 48 48" className={className} fill="none" aria-hidden>

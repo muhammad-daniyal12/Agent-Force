@@ -90,7 +90,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    active ? "bg-nav-active text-fg shadow-card" : "text-muted hover:bg-nav-active/60 hover:text-fg",
+                    active ? "bg-nav-active text-fg" : "text-muted hover:bg-surface-2 hover:text-fg",
                   )}
                 >
                   <Icon className={cn("h-4 w-4", active && "text-brand")} aria-hidden />
@@ -140,7 +140,7 @@ function SidebarFooter({ user, onLogout }: { user: SessionUser | null; onLogout:
   return (
     <div className="space-y-3">
       <ThemeToggle />
-      <div className="flex items-center gap-3 rounded-lg border border-sidebar-border bg-nav-active/70 p-3">
+      <div className="flex items-center gap-3 rounded-lg border border-sidebar-border bg-surface-2/60 p-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-fg">{initials}</div>
         <div className="min-w-0 flex-1 leading-tight">
           <p className="truncate text-[13px] font-medium text-fg">{name}</p>

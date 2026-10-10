@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 // Colours the phone's status bar / browser UI when installed.
 export const viewport: Viewport = {
-  themeColor: "#0f766e",
+  themeColor: "#059669",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

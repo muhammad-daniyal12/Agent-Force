@@ -5,7 +5,7 @@ import { toWhatsAppNumber } from "@/lib/business";
 import { formatCurrency, formatDate, shortId, taxLabel } from "@/lib/utils";
 
 /** The Relay mark in fixed colours (the print window has no theme variables). Keep in sync with BrandMark. */
-const AGENTFORCE_MARK_SVG = `<svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M8 34 L18 22 L28 30 L38 14" stroke="#0f766e" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="34" r="5" fill="#2563eb"/><circle cx="18" cy="22" r="5" fill="#d97706"/><circle cx="28" cy="30" r="5" fill="#7c3aed"/><circle cx="38" cy="14" r="7.5" fill="#0f766e"/><path d="M34.6 14.2 L37 16.6 L41.4 11.8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const AGENTFORCE_MARK_SVG = `<svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M8 34 L18 22 L28 30 L38 14" stroke="#059669" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="34" r="5" fill="#2563eb"/><circle cx="18" cy="22" r="5" fill="#d97706"/><circle cx="28" cy="30" r="5" fill="#7c3aed"/><circle cx="38" cy="14" r="7.5" fill="#059669"/><path d="M34.6 14.2 L37 16.6 L41.4 11.8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 /** "Name, City" or just "Name". */
 const signature = (b: BusinessProfile) => [b.name, b.city].filter(Boolean).join(", ");
@@ -63,8 +63,8 @@ export function printQuotation(q: Quotation, biz: BusinessProfile) {
   win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Quotation QUO-${shortId(q.id)}</title>
 <style>
   *{box-sizing:border-box} body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#0f172a;margin:0;padding:48px;font-size:13px}
-  .top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0f766e;padding-bottom:20px}
-  .brand{font-size:22px;font-weight:700;color:#0f766e} .muted{color:#586274} h1{font-size:20px;margin:0 0 4px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #059669;padding-bottom:20px}
+  .brand{font-size:22px;font-weight:700;color:#059669} .muted{color:#586274} h1{font-size:20px;margin:0 0 4px}
   .meta{display:flex;gap:48px;margin:28px 0} .meta b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#929db0;margin-bottom:4px}
   table{width:100%;border-collapse:collapse;margin-top:8px} th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#929db0;border-bottom:1px solid #e2e7ee;padding:8px 0}
   td{padding:10px 0;border-bottom:1px solid #eff2f6} .r{text-align:right} .tag{font-size:10px;color:#d97706;background:#fdf1df;padding:2px 6px;border-radius:99px}

@@ -47,6 +47,9 @@ export function quoteDto(row: BusinessRow): Quotation {
       status: quotationStatus,
       reviewerNote: z.string().max(1000).optional(),
       followedUpAt: z.iso.datetime({ offset: true }).optional(),
+      shareToken: z.string().regex(/^[A-Za-z0-9_-]{43,96}$/).optional(),
+      customerResponse: z.enum(["accepted"]).nullable().optional(),
+      respondedAt: z.iso.datetime({ offset: true }).optional(),
     }),
     {
       customerName: row.customerName,
@@ -63,6 +66,8 @@ export function quoteDto(row: BusinessRow): Quotation {
       status: row.status,
       ...(row.reviewerNote != null ? { reviewerNote: row.reviewerNote } : {}),
       ...(row.followedUpAt != null ? { followedUpAt: row.followedUpAt } : {}),
+      ...(row.shareToken != null ? { shareToken: row.shareToken, customerResponse: row.customerResponse ?? null } : {}),
+      ...(row.respondedAt != null ? { respondedAt: row.respondedAt } : {}),
     },
   );
   return { id: row.$id, ...value, createdAt: row.$createdAt };

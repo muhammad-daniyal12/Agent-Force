@@ -41,6 +41,9 @@ export interface Quotation {
   status: "pending" | "approved" | "rejected";
   reviewerNote?: string;
   followedUpAt?: string;
+  shareToken?: string;
+  customerResponse?: "accepted" | null;
+  respondedAt?: string;
   createdAt: string;
 }
 export interface AgentStep {

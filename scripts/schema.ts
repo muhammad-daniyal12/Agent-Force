@@ -97,10 +97,14 @@ export const businessSchema: {
       text("reviewer_user_id", 36, false),
       { key: "reviewed_at", type: "datetime", required: false },
       { key: "followedUpAt", type: "datetime", required: false },
+      text("shareToken", 96, false),
+      { key: "customerResponse", type: "enum", elements: ["accepted"], required: false },
+      { key: "respondedAt", type: "datetime", required: false },
       { key: "demo_tax_rate", type: "float", min: 0, max: 1, required: true },
     ],
     indexes: [
       history,
+      { key: "quotation_share_token", type: "unique", columns: ["shareToken"] },
       {
         key: "owner_status_created",
         type: "key",

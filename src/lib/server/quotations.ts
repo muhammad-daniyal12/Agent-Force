@@ -1,4 +1,5 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
 import { AppwriteException, Query } from "node-appwrite";
 import { ApiError } from "./errors";
 import { productDto, quoteDto } from "./mappers";
@@ -32,6 +33,13 @@ export async function reviewQuotation(
       // Conditional state transition and every stock change are in one transaction.
       // Appwrite conflict detection plus min:0 prevents double deductions/overselling.
       await store.decide(id, decision, note, transactionId);
+      if (decision === "approved") {
+        // 48 cryptographically secure bytes become 64 URL-safe characters.
+        // Store the token in the same transaction as approval and stock updates.
+        await store.update("quotations", id, {
+          shareToken: randomBytes(48).toString("base64url"),
+        }, transactionId);
+      }
       if (decision === "approved") {
         const quantities = new Map<string, number>();
         for (const item of quote.items)

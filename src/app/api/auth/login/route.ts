@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AppwriteException } from "node-appwrite";
 import { NextResponse } from "next/server";
 import { getConfig } from "@/lib/appwrite/config";
 import {
@@ -17,6 +18,24 @@ import {
 } from "@/lib/server/http";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { readJson } from "@/lib/server/validation";
+
+/** Private diagnostics: never log credentials, request bodies or SDK messages. */
+async function authStep<T>(stage: string, operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof AppwriteException) {
+      console.error(JSON.stringify({
+        event: "login_appwrite_step_failed",
+        stage,
+        code: error.code,
+        type: error.type,
+      }));
+    }
+    throw error;
+  }
+}
+
 export function POST(request: Request) {
   return respond(async () => {
     checkOrigin(request);
@@ -41,11 +60,13 @@ export function POST(request: Request) {
       }
     }
     const db = serverTables(request);
-    await rateLimit(db, "login:global", 100);
-    await rateLimit(db, `login:${input.email.toLowerCase()}`, 10);
+    await authStep("global-rate-limit", () => rateLimit(db, "login:global", 100));
+    await authStep("email-rate-limit", () => rateLimit(db, `login:${input.email.toLowerCase()}`, 10));
     let session;
     try {
-      session = await adminAccount(request).createEmailPasswordSession(input);
+      session = await authStep("create-session", () =>
+        adminAccount(request).createEmailPasswordSession(input),
+      );
     } catch (error) {
       if (
         typeof error === "object" &&
@@ -61,7 +82,7 @@ export function POST(request: Request) {
         503,
         "Session creation failed. Check the server authentication scope.",
       );
-    const user = await sessionAccount(session.secret).get();
+    const user = await authStep("verify-session", () => sessionAccount(session.secret).get());
     const response = NextResponse.json({
       data: { user: { id: user.$id, name: user.name, email: user.email } },
     });

@@ -246,3 +246,36 @@ curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" -X POST "$base/api/qu
 ```
 
 The required Appwrite schema migration is an **optional** `followedUpAt datetime` column in the `quotations` table, added via private `npm run setup:appwrite`. Frontend `Mark as done` still stores browser-local marks; the frontend engineer must connect it to this endpoint before cross-device follow-up status appears in the UI.
+
+
+## Public quotation share links + customer acceptance (backend-v2)
+
+When a signed-in owner **approves** a pending quotation, the server atomically stores a new, cryptographically random 64-character URL-safe share token in the same Appwrite transaction as the approval, stock deduction, and audit record. This token is a bearer capability: anyone who receives the link can view the restricted quote and accept it; do not post it publicly. No token is created for pending or rejected quotations. Already-approved legacy records are not automatically issued a token.
+
+Additional optional owner-facing `Quotation` fields:
+- `shareToken?: string` (present after new approval)
+- `customerResponse?: "accepted" | null` (null after approval, accepted after confirmation)
+- `respondedAt?: string` (ISO timestamp set on acceptance)
+
+| Method | Endpoint | Auth | Response |
+| --- | --- | --- | --- |
+| GET | `/api/public/quotes/:token` | No login | `{ businessName, businessCity, businessPhone, quotationNumber, customerName, items, subtotal, discount, tax, total, status, customerResponse, createdAt }` |
+| POST | `/api/public/quotes/:token/accept` | No login; exact `APP_ORIGIN` header required | `{ customerResponse: "accepted", respondedAt }` |
+
+The **public GET projection** deliberately returns only item `{ name, quantity, unitPrice, total }` fields and the fields in the table. It never returns owner IDs, customer/owner email addresses, customer phone numbers, product IDs, shareToken, reviewer notes, internal requests, or private activity. Invalid/missing token returns 404; unapproved quotes are not publicly viewable (404) and cannot be accepted (409). Both routes return noncacheable JSON with `Referrer-Policy: no-referrer` and `X-Robots-Tag: noindex, nofollow`.
+
+The first successful acceptance atomically records `customerResponse="accepted"`, `respondedAt`, and an activity entry `Customer accepted QUO-XXXXXX`. Repeated acceptance leaves the original timestamp and audit unchanged. No new stock change, payment, WhatsApp message, or email is triggered by acceptance.
+
+Example using an actual approved quotation share token:
+
+```powershell
+$token = "PASTE_REAL_SHARE_TOKEN_HERE"
+curl.exe --fail-with-body "$base/api/public/quotes/$token"
+curl.exe --fail-with-body -H "Origin: $base" -X POST "$base/api/public/quotes/$token/accept"
+```
+
+The application will need a separate frontend `/q/[token]` page that calls these routes; this backend-only PR does **not** add that page. Use `$base = APP_ORIGIN`, no login cookie is required for the public routes. Do not use a manually fabricated token in production.
+
+**Rate limits:** Independent per-minute persistent TablesDB buckets limit all public requests globally (GET 500, POST 120), by IP (GET 80, POST 20), and by token (GET 30, POST 8). Tokens are hashed in the rate-bucket identity. Client IP must come from a **trusted proxy**: the setting `TRUST_PROXY_IP_HEADERS=true` enables `X-Real-IP` or the first `X-Forwarded-For` entry **only after** confirming the deployment edge strips all incoming client-supplied IP headers and writes its own. The default is conservative: unverified clients share one `unknown-ip` budget. The token cap and global cap still apply. Validate the deployment proxy/IP behavior before enabling trusted IP parsing. Untrusted header values must never be considered authoritative.
+
+**Provisioning:** Add optional `shareToken varchar(96)` with a **unique index**, optional `customerResponse enum(accepted)`, and optional `respondedAt datetime` on `quotations` via the private setup script. This maintains compatibility with existing rows. Do not deploy before the schema and index are available, especially if the Site serves public traffic.

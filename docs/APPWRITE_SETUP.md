@@ -219,3 +219,12 @@ Before deploying new endpoints, rerun `npm run setup:appwrite` privately to crea
 ## Backend-v2 follow-up timestamp migration
 
 Before enabling the new POST `/api/quotations/:id/follow-up` endpoint, privately run `npm run setup:appwrite` to add the optional `quotations.followedUpAt` datetime column, then `npm run check:appwrite`. The column is optional, so previously stored quotations remain valid. All updates use the signed-in owner's scope and the server-only TablesDB client; no table/row grants or runtime administrative scopes are needed. The endpoint only stores a manual follow-up marker; it does not contact customers.
+
+
+## Backend-v2 public quotation capabilities
+
+Before enabling public quote routes, run `npm run setup:appwrite` privately to add these optional fields to the existing `quotations` table: `shareToken varchar(96)`, `customerResponse enum(accepted)`, `respondedAt datetime`. Add the globally unique `quotation_share_token` index on `shareToken`, which prevents accidental bearer-token collisions. Older pending, rejected, and approved quotations are preserved without tokens. After provisioning, run `npm run check:appwrite` and confirm unique-index availability before deploying.
+
+Do not expose server keys in public client code. The anonymous public GET and POST APIs are server routes, and the server alone looks up the private row by its unguessable token. Keep Row Security enabled and empty grants on `quotations` and `business_settings`. Public output omits private fields; the quote acceptance path verifies approval and updates only acceptance columns and audit, never inventory.
+
+For real per-client-IP public API limits, only set `TRUST_PROXY_IP_HEADERS=true` when a trusted deployment proxy **overwrites** spoofable IP headers before forwarding to Next.js. Otherwise keep it unset; the server uses a shared fallback IP bucket plus per-token and global limits. Test this explicitly in Appwrite Sites before production. The backend does not yet implement a public `/q/[token]` frontend page.

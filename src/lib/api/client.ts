@@ -17,6 +17,13 @@ export interface SessionUser {
   email: string;
 }
 
+export interface SignupInput {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 /** Sends the browser to the login page when the session is missing or expired. */
 function redirectToLogin() {
   if (typeof window !== "undefined" && window.location.pathname !== "/login") {
@@ -96,6 +103,13 @@ export const auth = {
       return user;
     }
     return (await http<{ data: { user: SessionUser } }>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }, { redirectOn401: false })).data.user;
+  },
+
+  signup: async (input: SignupInput): Promise<SessionUser> => {
+    if (USE_MOCK) throw new ApiError("Account creation requires real backend mode. Disable NEXT_PUBLIC_USE_MOCK first.", 400);
+    return (await http<{ data: { user: SessionUser } }>("/api/auth/signup", {
+      method: "POST", body: JSON.stringify(input),
+    }, { redirectOn401: false })).data.user;
   },
 
   /** Ends the session. Throws if the server couldn't revoke it, so the UI never pretends to be signed out. */

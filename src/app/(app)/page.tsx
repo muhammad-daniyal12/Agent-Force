@@ -101,7 +101,7 @@ export default function DashboardPage() {
                 ))}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Chart */}
             <Card className="lg:col-span-2">
               <div className="flex flex-col gap-4 border-b border-border px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
@@ -198,7 +198,7 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
             {/* Pending approvals */}
             <Card className="lg:col-span-3">
               <CardHeader

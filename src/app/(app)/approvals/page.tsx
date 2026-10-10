@@ -70,7 +70,7 @@ function ApprovalCenter() {
       {error ? (
         <Card><ErrorState message={error} onRetry={reload} /></Card>
       ) : (
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           {/* List */}
           <Card className={cn(selectedId && "hidden lg:block")}>
             <div className="flex gap-1 overflow-x-auto border-b border-border p-2" role="tablist" aria-label="Quotation status">

@@ -227,7 +227,7 @@ export default function OperationsPage() {
         </ol>
       </Card>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         {/* Request form */}
         <Card className="overflow-hidden lg:sticky lg:top-8">
           <CardHeader

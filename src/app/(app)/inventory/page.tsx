@@ -120,7 +120,7 @@ export default function InventoryPage() {
                   <th className="px-5 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody className="stagger divide-y divide-border">
+              <tbody className="divide-y divide-border">
                 {visible.map((p) => {
                   const state = stockState(p);
                   const pct = Math.min(100, (p.stock / Math.max(p.lowStockThreshold * 4, 1)) * 100);

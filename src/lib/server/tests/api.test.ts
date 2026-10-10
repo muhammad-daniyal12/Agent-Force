@@ -192,10 +192,10 @@ test("the full fallback demo respects DTOs, approval, stock, dashboard and activ
       ["hub", 5],
     ],
   );
-  assert.equal(quote.subtotal, 699.85);
-  assert.equal(quote.discount, 34.99);
-  assert.equal(quote.tax, 53.19);
-  assert.equal(quote.total, 718.05);
+  assert.equal(quote.subtotal, 700);
+  assert.equal(quote.discount, 0);
+  assert.equal(quote.tax, 56);
+  assert.equal(quote.total, 756);
   assert.equal(fixture.rows.get("products/mouse")!.stock, 120);
   assert.deepEqual(
     Object.keys(operation).sort(),
@@ -242,7 +242,7 @@ test("the full fallback demo respects DTOs, approval, stock, dashboard and activ
   assert.deepEqual(stats, {
     totalQuotations: 1,
     pendingApprovals: 0,
-    approvedValue: 718.05,
+    approvedValue: 756,
     lowStockCount: 0,
     activeAgents: 3,
   });

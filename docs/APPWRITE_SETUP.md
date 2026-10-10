@@ -192,3 +192,9 @@ HTTP-only session flow, use relative API URLs, send editable fields only, handle
 JSON error strings and 409 refreshes, and display demo tax settings as demo.
 QA/deployment handoff: provision the current schema, preserve owner isolation,
 set SSR/scopes/origin/timeout, and smoke-test the actual Appwrite region.
+
+## Backend-v2 business settings provisioning
+
+The new `business_settings` table is provisioned by `npm run setup:appwrite` using the existing private provisioning key. Its table ID defaults to `business_settings` and may be overridden with `APPWRITE_SETTINGS_TABLE_ID` locally or `AGENTFORCE_APPWRITE_SETTINGS_TABLE_ID` on Appwrite Sites. Columns: required `owner_user_id varchar(36)`, `name varchar(120)`, `city varchar(80)`, `phone varchar(20)`, and `email varchar(254)`; index: `owner_created`. The authenticated backend writes empty strings when optional settings are absent. As with other business tables, use Row Security with empty table/row permissions; server API keys still require explicit owner validation.
+
+The new runtime settings API uses the existing `rows.read` and `rows.write` scopes. **Before deploying this branch**, rerun private setup to create the new table and then `npm run check:appwrite` to verify six tables; otherwise `/api/settings` will be unavailable. Schema-admin keys must not be deployed.

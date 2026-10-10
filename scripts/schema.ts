@@ -47,7 +47,7 @@ const history: Index = {
 };
 
 export const businessSchema: {
-  configKey: "products" | "quotations" | "runs" | "activity" | "rateLimits";
+  configKey: "products" | "quotations" | "runs" | "activity" | "rateLimits" | "settings";
   columns: Column[];
   indexes: Index[];
 }[] = [
@@ -133,6 +133,17 @@ export const businessSchema: {
       text("actor", 64),
       text("action", 200),
       text("target", 200),
+    ],
+    indexes: [history],
+  },
+  {
+    configKey: "settings",
+    columns: [
+      owner,
+      text("name", 120),
+      text("city", 80),
+      text("phone", 20),
+      text("email", 254),
     ],
     indexes: [history],
   },

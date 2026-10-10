@@ -160,3 +160,24 @@ The quotation agent now uses Pakistan-rupee **demo** pricing: discounts are 0% u
 No endpoint or DTO shape has changed in this pricing-only increment. New account settings, dealer, restock, follow-up, public quote, and bulk import endpoints described in the backend-v2 request **are not yet implemented**. The changed seed script only adds missing SKUs; it deliberately does not overwrite products already seeded at old prices. Review and migrate existing demo catalog prices explicitly before using the PKR example in a live demonstration.
 
 Example expected numbers for a demonstration quotation: 10 Wireless Mouse @ Rs 2,499 + 10 Mechanical Keyboard @ Rs 12,999 + 5 USB-C Hub @ Rs 6,499 gives Rs 187,475 subtotal, Rs 9,374 volume discount, Rs 32,058 demo tax, Rs 210,159 total.
+
+## Business settings (backend-v2)
+
+Settings are owner scoped and stored in the server-only `business_settings` table (one row per owner). Session, Origin validation on writes, rate limits, 32 KiB JSON size limit, and Zod validation use the existing business API infrastructure.
+
+| Method | Endpoint | Body | Response |
+| --- | --- | --- | --- |
+| GET | `/api/settings` | None | `{ name, city, phone, email }` |
+| PUT | `/api/settings` | `{ name, city?, phone?, email? }` | `{ name, city, phone, email }` |
+
+When no settings row exists, GET returns the authenticated account name (or "My Business" when blank) and empty strings for other fields. PUT replaces the business profile; omitted optional fields become empty strings. Name must be 1-120 characters; city up to 80, phone up to 20 with 10-15 numeric digits after removing spaces/leading +, and email must be blank or valid (up to 254). Rows are owned by the authenticated account and receive no client grants. PUT writes an activity audit entry. No client-supplied owner ID is accepted.
+
+Authenticated PowerShell example using the previously documented `$base`, `$cookieJar`, and `Write-Body` helper:
+
+```powershell
+curl.exe --fail-with-body -b $cookieJar "$base/api/settings"
+Write-Body @{ name = "Nova Tech Supplies"; city = "Lahore"; phone = "+92 300 1234567"; email = "sales@example.pk" }
+curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" -X PUT "$base/api/settings"
+```
+
+The frontend's existing browser-local `src/lib/business.ts` profile is **not yet connected** to this API and must be migrated separately by the frontend engineer.

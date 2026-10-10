@@ -12,6 +12,7 @@ import type { AgentType, Quotation } from "@/types";
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, PageHeader, Skeleton } from "@/components/ui";
 import { ActorAvatar, AgentAvatar } from "@/components/agent-meta";
 import { CountUp } from "@/components/count-up";
+import { useBusiness } from "@/lib/business";
 import { MINUTES_SAVED_PER_QUOTE } from "@/lib/quotation-docs";
 
 function weeklyVolume(quotations: Quotation[]) {
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const [stats, agents, quotations, activity] = data ?? [];
   const pending = quotations?.filter((q) => q.status === "pending") ?? [];
   // Computed after mount so the prerendered HTML and the client agree.
+  const biz = useBusiness();
   const [hello, setHello] = useState("Welcome back");
   // eslint-disable-next-line react-hooks/set-state-in-effect -- time-based greeting must be computed after hydration
   useEffect(() => setHello(greeting()), []);
@@ -60,7 +62,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title={`${hello}, Nova Tech`}
+        title={`${hello}, ${biz.name}`}
         description={quotations ? `Your AI team saved about ${hoursSaved} hours of manual work this week.` : "Here's what your AI team has been working on."}
         actions={
           <Button asChild>

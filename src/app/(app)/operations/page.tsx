@@ -19,6 +19,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { api, ApiError } from "@/lib/api/client";
+import { isValidPhone, rememberCustomerPhone } from "@/lib/business";
+import { CustomerInsight } from "@/components/customer-insight";
 import { cn, formatCurrency, shortId, taxLabel } from "@/lib/utils";
 import type { AgentStep, AgentType, OperationRun, Quotation } from "@/types";
 import { Badge, Button, Card, CardHeader, Field, Input, PageHeader, Textarea } from "@/components/ui";
@@ -31,24 +33,28 @@ const samples = [
     label: "Office setup",
     customerName: "Ali Raza",
     customerEmail: "ali@finlytics.pk",
+    phone: "0300 1234567",
     request: "Assalam o Alaikum! We're setting up a new office in Gulberg. I need 10 wireless mice, 10 mechanical keyboards and 5 USB-C hubs. Can you send me a quotation?",
   },
   {
     label: "Low stock",
     customerName: "Zara Hussain",
     customerEmail: "zara@pixelcraft.pk",
+    phone: "0321 7654321",
     request: "Please quote 12 HD webcams and 6 noise cancelling headsets for our remote team. Urgent, need them this week.",
   },
   {
     label: "Big order",
     customerName: "Hamza Qureshi",
     customerEmail: "hamza@vertexlogistics.pk",
+    phone: "0333 5550123",
     request: "Need 8 x 27 inch monitors, 8 laptop stands and 4 thunderbolt docks for our operations floor in Karachi.",
   },
   {
     label: "General question",
     customerName: "Maria Lopez",
     customerEmail: "maria@example.com",
+    phone: "",
     request: "What are your opening hours on Saturday?",
   },
 ];
@@ -76,6 +82,8 @@ const REVEAL_MS = 700;
 
 export default function OperationsPage() {
   const [form, setForm] = useState({ customerName: "", customerEmail: "", request: "" });
+  // Customer WhatsApp number: kept in the browser only (the backend has no phone field yet).
+  const [phone, setPhone] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [phase, setPhase] = useState<Phase>("idle");
   const [run, setRun] = useState<OperationRun | null>(null);
@@ -91,6 +99,7 @@ export default function OperationsPage() {
     if (!form.customerName.trim()) next.customerName = "Customer name is required";
     if (!/^\S+@\S+\.\S+$/.test(form.customerEmail)) next.customerEmail = "Enter a valid email";
     if (form.request.trim().length < 10) next.request = "Describe the request in at least 10 characters";
+    if (!isValidPhone(phone)) next.phone = "Enter a valid number, e.g. 0300 1234567";
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -105,6 +114,7 @@ export default function OperationsPage() {
     setPhase("running");
     try {
       const result = await api.runOperation(form);
+      if (result.quotation) rememberCustomerPhone(result.quotation.id, phone);
       setRun(result);
       setPhase("revealing");
       // Reveal agent steps one at a time so the hand-off between agents is visible.
@@ -133,6 +143,7 @@ export default function OperationsPage() {
     setVisible(0);
     setRunError(null);
     setForm({ customerName: "", customerEmail: "", request: "" });
+    setPhone("");
     setErrors({});
   }
 
@@ -258,6 +269,7 @@ export default function OperationsPage() {
                       disabled={busy}
                       onClick={() => {
                         setForm({ customerName: s.customerName, customerEmail: s.customerEmail, request: s.request });
+                        setPhone(s.phone);
                         setErrors({});
                       }}
                       className={cn(
@@ -295,6 +307,18 @@ export default function OperationsPage() {
                 />
               </Field>
             </div>
+
+            <Field label="Customer WhatsApp (optional)" htmlFor="customerPhone" error={errors.phone} hint="Lets you send the approved reply straight to their chat">
+              <Input
+                id="customerPhone"
+                inputMode="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="0300 1234567"
+                disabled={busy}
+                aria-invalid={!!errors.phone}
+              />
+            </Field>
 
             <Field label="Message" htmlFor="request" error={errors.request}>
               <Textarea
@@ -357,7 +381,7 @@ export default function OperationsPage() {
           {phase === "done" && run && (
             <div className="animate-pop-in">
               {quotation ? (
-                <QuotationResult quotation={quotation} summary={run.summary} onChange={setQuotation} />
+                <QuotationResult quotation={quotation} summary={run.summary} phone={phone} onChange={setQuotation} />
               ) : (
                 <Card className="flex items-start gap-3 p-5">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-support-soft text-support"><MessageSquareText className="h-4 w-4" /></div>
@@ -548,7 +572,7 @@ function ToolOutput({ step }: { step: AgentStep }) {
   return <pre className="max-h-56 overflow-auto font-mono text-xs leading-relaxed text-muted">{JSON.stringify(out, null, 2)}</pre>;
 }
 
-function QuotationResult({ quotation, summary, onChange }: { quotation: Quotation; summary: string; onChange: (q: Quotation) => void }) {
+function QuotationResult({ quotation, summary, phone, onChange }: { quotation: Quotation; summary: string; phone: string; onChange: (q: Quotation) => void }) {
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
   const shortage = quotation.items.some((i) => !i.inStock);
 
@@ -562,7 +586,13 @@ function QuotationResult({ quotation, summary, onChange }: { quotation: Quotatio
         description: kind === "approve" ? `Ready to send to ${updated.customerName}. Stock has been reserved.` : "The customer won't receive this draft.",
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Action failed");
+      if (err instanceof ApiError && err.status === 409) {
+        // Already decided elsewhere or stock changed: show the latest state instead of a stale card.
+        api.quotation(quotation.id).then(onChange).catch(() => undefined);
+        toast.error(err.message, { description: "Refreshed with the latest status. Review it again." });
+      } else {
+        toast.error(err instanceof Error ? err.message : "Action failed");
+      }
     } finally {
       setBusy(null);
     }
@@ -579,6 +609,7 @@ function QuotationResult({ quotation, summary, onChange }: { quotation: Quotatio
             </Badge>
           </div>
           <p className="mt-0.5 text-[13px] text-muted">For {quotation.customerName} · {quotation.customerEmail}</p>
+          <div className="mt-2"><CustomerInsight email={quotation.customerEmail} excludeId={quotation.id} /></div>
         </div>
         <Link href={`/approvals?id=${quotation.id}`} className="inline-flex items-center gap-1 text-[13px] font-medium text-brand hover:underline">
           Open in Approval Center <ArrowRight className="h-3.5 w-3.5" aria-hidden />
@@ -629,7 +660,7 @@ function QuotationResult({ quotation, summary, onChange }: { quotation: Quotatio
       </div>
 
       <div className="px-5 pb-5">
-        <CustomerReply quotation={quotation} />
+        <CustomerReply quotation={quotation} phone={phone} />
       </div>
 
       {quotation.status === "pending" && (

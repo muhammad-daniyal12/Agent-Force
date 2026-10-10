@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ClipboardList, Copy, MessageCircle } from "lucide-react";
 import type { Product } from "@/types";
-import { BUSINESS, whatsappLink } from "@/lib/quotation-docs";
+import { whatsappLink } from "@/lib/quotation-docs";
+import { useBusiness, type BusinessProfile } from "@/lib/business";
 import { formatCurrency } from "@/lib/utils";
 import { Badge, Button, Card, Textarea } from "@/components/ui";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -13,10 +14,10 @@ import { AgentAvatar } from "@/components/agent-meta";
 /** Reorder enough to reach four times the low-stock threshold, rounded up to a multiple of 5. */
 const reorderQty = (p: Product) => Math.max(5, Math.ceil((p.lowStockThreshold * 4 - p.stock) / 5) * 5);
 
-function purchaseOrder(items: { product: Product; qty: number }[]) {
+function purchaseOrder(items: { product: Product; qty: number }[], biz: BusinessProfile) {
   const date = new Date().toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" });
   return [
-    `Purchase order from ${BUSINESS.name}, ${BUSINESS.city}`,
+    `Purchase order from ${[biz.name, biz.city].filter(Boolean).join(", ")}`,
     `Date: ${date}`,
     "",
     "Please supply the following items:",
@@ -24,12 +25,13 @@ function purchaseOrder(items: { product: Product; qty: number }[]) {
     "",
     "Kindly confirm availability, price and delivery date.",
     "",
-    `${BUSINESS.name}`,
-    `${BUSINESS.phone} · ${BUSINESS.email}`,
+    biz.name,
+    [biz.phone, biz.email].filter(Boolean).join(" · "),
   ].join("\n");
 }
 
 export function RestockPanel({ products }: { products: Product[] }) {
+  const biz = useBusiness();
   const items = useMemo(
     () =>
       products
@@ -45,7 +47,7 @@ export function RestockPanel({ products }: { products: Product[] }) {
   const retailValue = items.reduce((s, { product, qty }) => s + product.price * qty, 0);
 
   function openDraft() {
-    setText(purchaseOrder(items));
+    setText(purchaseOrder(items, biz));
     setOpen(true);
   }
 

@@ -5,12 +5,15 @@ import { toast } from "sonner";
 import { Copy, Download, Mail, MessageCircle, RotateCcw } from "lucide-react";
 import type { Quotation } from "@/types";
 import { draftReply, emailLink, printQuotation, whatsappLink } from "@/lib/quotation-docs";
+import { customerPhoneFor, useBusiness } from "@/lib/business";
 import { Badge, Button, Textarea } from "@/components/ui";
 import { AgentAvatar } from "@/components/agent-meta";
 
 /** Support Agent's reply draft. Editable while pending; send actions unlock after approval. */
-export function CustomerReply({ quotation }: { quotation: Quotation }) {
-  const [text, setText] = useState(() => draftReply(quotation));
+export function CustomerReply({ quotation, phone }: { quotation: Quotation; phone?: string }) {
+  const biz = useBusiness();
+  const [text, setText] = useState(() => draftReply(quotation, biz));
+  const customerPhone = phone || customerPhoneFor(quotation.id);
   const approved = quotation.status === "approved";
   const rejected = quotation.status === "rejected";
 
@@ -24,7 +27,7 @@ export function CustomerReply({ quotation }: { quotation: Quotation }) {
   }
 
   function pdf() {
-    if (!printQuotation(quotation)) toast.error("Allow pop-ups to download the PDF");
+    if (!printQuotation(quotation, biz)) toast.error("Allow pop-ups to download the PDF");
   }
 
   return (
@@ -52,12 +55,12 @@ export function CustomerReply({ quotation }: { quotation: Quotation }) {
           {approved && (
             <>
               <Button asChild size="sm" className="bg-[#25D366] text-white hover:opacity-90">
-                <a href={whatsappLink(text)} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-4 w-4" aria-hidden /> Send on WhatsApp
+                <a href={whatsappLink(text, customerPhone)} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-4 w-4" aria-hidden /> {customerPhone ? "WhatsApp customer" : "Send on WhatsApp"}
                 </a>
               </Button>
               <Button asChild size="sm" variant="secondary">
-                <a href={emailLink(quotation, text)}>
+                <a href={emailLink(quotation, text, biz)}>
                   <Mail className="h-4 w-4" aria-hidden /> Email
                 </a>
               </Button>
@@ -70,7 +73,7 @@ export function CustomerReply({ quotation }: { quotation: Quotation }) {
             <Download className="h-4 w-4" aria-hidden /> PDF
           </Button>
           {!approved && !rejected && (
-            <Button size="sm" variant="ghost" onClick={() => setText(draftReply(quotation))} className="ml-auto">
+            <Button size="sm" variant="ghost" onClick={() => setText(draftReply(quotation, biz))} className="ml-auto">
               <RotateCcw className="h-3.5 w-3.5" aria-hidden /> Reset draft
             </Button>
           )}

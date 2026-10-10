@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Bot, CheckCircle2, LayoutDashboard, LogOut, Menu, Moon, Package, Sun, Workflow, X } from "lucide-react";
+import { Bot, CheckCircle2, LayoutDashboard, LogOut, Menu, Moon, Package, Settings, Sun, Workflow, X } from "lucide-react";
 import { api, ApiError, auth, isMockMode, type SessionUser } from "@/lib/api/client";
+import { SessionContext } from "@/components/session";
+import { useBusiness } from "@/lib/business";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -14,6 +16,7 @@ const nav = [
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/inventory", label: "Inventory", icon: Package },
   { href: "/approvals", label: "Approval Center", icon: CheckCircle2, badge: true },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 /** Fired by pages after creating/approving quotations so the sidebar count stays fresh. */
@@ -99,7 +102,8 @@ function ThemeToggle() {
 }
 
 function SidebarFooter({ user, onLogout }: { user: SessionUser | null; onLogout: () => void }) {
-  const name = user?.name || user?.email || "Owner";
+  const biz = useBusiness();
+  const name = biz.name || user?.email || "Owner";
   const initials = name
     .split(/[\s@.]+/)
     .filter(Boolean)
@@ -158,6 +162,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const footer = <SidebarFooter user={user} onLogout={logout} />;
 
   return (
+    <SessionContext.Provider value={user}>
     <div className="min-h-dvh">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col justify-between border-r border-border bg-surface px-4 py-5 lg:flex">
@@ -208,8 +213,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       <main className="overflow-x-clip lg:pl-64">
-        <div key={pathname} className="animate-fade-up mx-auto w-full max-w-[1360px] px-4 py-6 sm:px-6 lg:px-10 lg:py-8">{children}</div>
+        <div key={pathname} className="animate-fade-up mx-auto w-full max-w-[1360px] px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+          {children}
+        </div>
       </main>
     </div>
+    </SessionContext.Provider>
   );
 }

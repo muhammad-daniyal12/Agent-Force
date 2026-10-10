@@ -4,7 +4,8 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, Check, CheckCircle2, Inbox, MessageSquareQuote, X } from "lucide-react";
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
+import { CustomerInsight } from "@/components/customer-insight";
 import { useAsync } from "@/lib/use-async";
 import { cn, formatCurrency, formatDate, shortId, taxLabel, timeAgo } from "@/lib/utils";
 import type { ActivityLog, Quotation } from "@/types";
@@ -146,6 +147,7 @@ function ApprovalCenter() {
                 history={(activity ?? []).filter((a) => a.target.includes(shortId(selected.id)))}
                 onBack={() => router.replace("/approvals", { scroll: false })}
                 onDecided={onDecided}
+                onConflict={reload}
               />
             ) : (
               <Card><EmptyState icon={MessageSquareQuote} title={selectedId ? "Quotation not found" : "Select a quotation"} description="Choose a quotation from the list to review it." /></Card>
@@ -162,11 +164,13 @@ function QuotationDetail({
   history,
   onBack,
   onDecided,
+  onConflict,
 }: {
   quotation: Quotation;
   history: ActivityLog[];
   onBack: () => void;
   onDecided: (q: Quotation, log: ActivityLog) => void;
+  onConflict: () => void;
 }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
@@ -187,7 +191,13 @@ function QuotationDetail({
         description: kind === "approve" ? `${updated.customerName} can now receive this quotation. Stock reserved.` : "This draft won't be sent.",
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Action failed");
+      if (err instanceof ApiError && err.status === 409) {
+        // Decided in another tab or stock changed since the quote: reload the latest data.
+        onConflict();
+        toast.error(err.message, { description: "Refreshed with the latest status. Review it again." });
+      } else {
+        toast.error(err instanceof Error ? err.message : "Action failed");
+      }
     } finally {
       setBusy(null);
     }
@@ -208,6 +218,7 @@ function QuotationDetail({
             <p className="mt-0.5 text-[13px] text-muted">
               {quotation.customerEmail} · <span className="font-mono">QUO-{shortId(quotation.id)}</span> · {formatDate(quotation.createdAt)}
             </p>
+            <div className="mt-2"><CustomerInsight email={quotation.customerEmail} excludeId={quotation.id} /></div>
           </div>
           <div className="text-right">
             <p className="text-xs text-muted">Total</p>

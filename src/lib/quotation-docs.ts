@@ -1,20 +1,23 @@
 // Customer-facing outputs for a quotation: the Support Agent's reply draft and a printable PDF.
 import type { Quotation } from "@/types";
+import type { BusinessProfile } from "@/lib/business";
+import { toWhatsAppNumber } from "@/lib/business";
 import { formatCurrency, formatDate, shortId, taxLabel } from "@/lib/utils";
 
-export const BUSINESS = { name: "Nova Tech Supplies", city: "Lahore", phone: "+92 300 1234567", email: "sales@novatech.pk" };
+/** "Name, City" or just "Name". */
+const signature = (b: BusinessProfile) => [b.name, b.city].filter(Boolean).join(", ");
 
 /** Minutes a person typically spends reading a request, checking stock and pricing a quote by hand. */
 export const MINUTES_SAVED_PER_QUOTE = 20;
 
-export function draftReply(q: Quotation) {
+export function draftReply(q: Quotation, biz: BusinessProfile) {
   const firstName = q.customerName.split(" ")[0];
   const lines = q.items.map((i) => `• ${i.quantity} × ${i.name} @ ${formatCurrency(i.unitPrice)} = ${formatCurrency(i.total)}`);
   const short = q.items.filter((i) => !i.inStock);
   return [
     `Dear ${firstName},`,
     "",
-    `Thank you for contacting ${BUSINESS.name}. Here is your quotation QUO-${shortId(q.id)}:`,
+    `Thank you for contacting ${biz.name}. Here is your quotation QUO-${shortId(q.id)}:`,
     "",
     ...lines,
     "",
@@ -32,20 +35,21 @@ export function draftReply(q: Quotation) {
     "This quotation is valid for 7 days. Just reply to this message to confirm your order.",
     "",
     "Best regards,",
-    `${BUSINESS.name}, ${BUSINESS.city}`,
-    BUSINESS.phone,
+    signature(biz),
+    ...(biz.phone ? [biz.phone] : []),
   ].join("\n");
 }
 
-export const whatsappLink = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
+/** Opens WhatsApp with the text ready; goes straight to the customer's chat when a phone is known. */
+export const whatsappLink = (text: string, phone = "") => `https://wa.me/${toWhatsAppNumber(phone)}?text=${encodeURIComponent(text)}`;
 
-export const emailLink = (q: Quotation, text: string) =>
-  `mailto:${q.customerEmail}?subject=${encodeURIComponent(`Quotation QUO-${shortId(q.id)} from ${BUSINESS.name}`)}&body=${encodeURIComponent(text)}`;
+export const emailLink = (q: Quotation, text: string, biz: BusinessProfile) =>
+  `mailto:${q.customerEmail}?subject=${encodeURIComponent(`Quotation QUO-${shortId(q.id)} from ${biz.name}`)}&body=${encodeURIComponent(text)}`;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 /** Opens a print-ready quotation; the browser's "Save as PDF" produces the file. */
-export function printQuotation(q: Quotation) {
+export function printQuotation(q: Quotation, biz: BusinessProfile) {
   const win = window.open("", "_blank", "width=820,height=1000");
   if (!win) return false;
   const rows = q.items
@@ -66,7 +70,7 @@ export function printQuotation(q: Quotation) {
   .foot{margin-top:48px;padding-top:16px;border-top:1px solid #e2e7ee;font-size:11px;color:#586274}
   @media print{body{padding:24px}}
 </style></head><body>
-<div class="top"><div><div class="brand">${BUSINESS.name}</div><div class="muted">${BUSINESS.city}, Pakistan · ${BUSINESS.phone} · ${BUSINESS.email}</div></div>
+<div class="top"><div><div class="brand">${esc(biz.name)}</div><div class="muted">${esc([biz.city ? `${biz.city}, Pakistan` : "Pakistan", biz.phone, biz.email].filter(Boolean).join(" · "))}</div></div>
 <div style="text-align:right"><h1>Quotation</h1><div class="muted">QUO-${shortId(q.id)}</div></div></div>
 <div class="meta"><div><b>Prepared for</b>${esc(q.customerName)}<br><span class="muted">${esc(q.customerEmail)}</span></div>
 <div><b>Date</b>${formatDate(q.createdAt)}</div><div><b>Valid for</b>7 days</div><div><b>Status</b>${q.status === "approved" ? "Approved" : q.status === "rejected" ? "Rejected" : "Draft, pending approval"}</div></div>
@@ -75,7 +79,7 @@ export function printQuotation(q: Quotation) {
 ${q.discount > 0 ? `<div><span class="muted">Volume discount</span><span>−${formatCurrency(q.discount)}</span></div>` : ""}
 <div><span class="muted">${taxLabel(q)}</span><span>${formatCurrency(q.tax)}</span></div>
 <div class="grand"><span>Total</span><span>${formatCurrency(q.total)}</span></div></div>
-<div class="foot">Prepared by AgentForce AI agents and reviewed by ${BUSINESS.name}. Prices in Pakistani Rupees, inclusive of GST.</div>
+<div class="foot">Prepared by AgentForce AI agents and reviewed by ${esc(biz.name)}. Prices in Pakistani Rupees, inclusive of GST.</div>
 <script>window.onload=()=>{window.print()}</script></body></html>`);
   win.document.close();
   return true;

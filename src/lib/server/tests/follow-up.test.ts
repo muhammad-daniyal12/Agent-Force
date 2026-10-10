@@ -61,17 +61,17 @@ function req(
   owner: string | null = "owner-one",
   origin = "http://localhost:3000",
 ) {
-  return new Request(`http://localhost:3000/api/quotations/\${id}/follow-up`, {
+  return new Request(`http://localhost:3000/api/quotations/${id}/follow-up`, {
     method,
     headers: {
-      ...(owner ? { Cookie: `agentforce_session=\${owner}-session` } : {}),
+      ...(owner ? { Cookie: `agentforce_session=${owner}-session` } : {}),
       ...(method === "POST" ? { Origin: origin } : {}),
     },
   });
 }
 function getReq(path: string, owner = "owner-one") {
   return new Request("http://localhost:3000" + path, {
-    headers: { Cookie: `agentforce_session=\${owner}-session` },
+    headers: { Cookie: `agentforce_session=${owner}-session` },
   });
 }
 async function body<T>(response: Response, status = 200): Promise<T> {

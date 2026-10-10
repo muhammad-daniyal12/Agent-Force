@@ -96,6 +96,7 @@ export const businessSchema: {
       text("reviewerNote", 1000, false),
       text("reviewer_user_id", 36, false),
       { key: "reviewed_at", type: "datetime", required: false },
+      { key: "followedUpAt", type: "datetime", required: false },
       { key: "demo_tax_rate", type: "float", min: 0, max: 1, required: true },
     ],
     indexes: [

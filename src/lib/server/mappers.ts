@@ -46,6 +46,7 @@ export function quoteDto(row: BusinessRow): Quotation {
       total: z.number().finite().nonnegative(),
       status: quotationStatus,
       reviewerNote: z.string().max(1000).optional(),
+      followedUpAt: z.iso.datetime({ offset: true }).optional(),
     }),
     {
       customerName: row.customerName,
@@ -61,6 +62,7 @@ export function quoteDto(row: BusinessRow): Quotation {
       total: row.total,
       status: row.status,
       ...(row.reviewerNote != null ? { reviewerNote: row.reviewerNote } : {}),
+      ...(row.followedUpAt != null ? { followedUpAt: row.followedUpAt } : {}),
     },
   );
   return { id: row.$id, ...value, createdAt: row.$createdAt };

@@ -214,3 +214,8 @@ The additive provisioning script creates two new server-only tables (Row Securit
 Defaults: `APPWRITE_DEALERS_TABLE_ID=dealers`, `APPWRITE_RESTOCK_ORDERS_TABLE_ID=restock_orders`. On Appwrite Sites use the corresponding `AGENTFORCE_APPWRITE_*` aliases if overriding defaults. The runtime retains only `rows.read`, `rows.write`, `sessions.write` scopes; do not deploy setup keys.
 
 Before deploying new endpoints, rerun `npm run setup:appwrite` privately to create the two tables and optional quotation phone column, then `npm run check:appwrite` to verify all **eight** runtime-accessed tables. After schema setup, `npm run seed` adds two illustrative dealers for `SEED_OWNER_USER_ID` by name without replacing existing dealer records or products. Repeated seeding intentionally preserves manually edited stock and prices. Verify the dealer/category matching in the frontend before demoing; the client still uses browser-only dealer data until separately wired to these server endpoints.
+
+
+## Backend-v2 follow-up timestamp migration
+
+Before enabling the new POST `/api/quotations/:id/follow-up` endpoint, privately run `npm run setup:appwrite` to add the optional `quotations.followedUpAt` datetime column, then `npm run check:appwrite`. The column is optional, so previously stored quotations remain valid. All updates use the signed-in owner's scope and the server-only TablesDB client; no table/row grants or runtime administrative scopes are needed. The endpoint only stores a manual follow-up marker; it does not contact customers.

@@ -79,3 +79,41 @@ export async function reviewQuotation(
   }
   return quoteDto(await store.get("quotations", id));
 }
+
+
+/**
+ * Persist one owner-confirmed customer follow-up. A second call is a no-op,
+ * preserving the first follow-up time and avoiding duplicate audit records.
+ * We do not send a message automatically.
+ */
+export async function followUpQuotation(
+  store: BusinessStore,
+  id: string,
+): Promise<Quotation> {
+  try {
+    await store.transaction(async (transactionId) => {
+      const quote = quoteDto(await store.get("quotations", id, transactionId));
+      if (quote.followedUpAt) return;
+      await store.update(
+        "quotations",
+        id,
+        { followedUpAt: new Date().toISOString() },
+        transactionId,
+      );
+      await store.activity(
+        "Admin",
+        `Admin followed up with \${quote.customerName}`,
+        id,
+        transactionId,
+      );
+    });
+  } catch (error) {
+    if (error instanceof AppwriteException && error.code === 409) {
+      // Concurrent attempts might conflict: a completed first request wins.
+      const latest = quoteDto(await store.get("quotations", id));
+      if (latest.followedUpAt) return latest;
+    }
+    throw error;
+  }
+  return quoteDto(await store.get("quotations", id));
+}

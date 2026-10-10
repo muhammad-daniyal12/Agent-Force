@@ -227,3 +227,22 @@ curl.exe --fail-with-body -b $cookieJar "$base/api/restock-orders?status=sent"
 ```
 
 Provision `dealers` and `restock_orders` via `npm run setup:appwrite` with the private provisioning key before deploying this branch, then run `npm run check:appwrite`. The new backend API **is not yet wired into** the browser-based `src/lib/dealers.ts` and restock-panel UI; a separate frontend integration is required. The seed script adds two example dealers without replacing previously saved dealers, and existing browser-local dealers are not automatically migrated.
+
+
+## Customer follow-up status (backend-v2)
+
+| Method | Endpoint | Request | Response |
+| --- | --- | --- | --- |
+| POST | `/api/quotations/:id/follow-up` | No JSON body required | Bare `Quotation`, 200 |
+
+The authenticated owner records that a **manual** follow-up was completed. On first success the server sets `followedUpAt` (ISO timestamp) on the quotation and creates an activity log: `Admin followed up with <customer>`. Additional calls leave the original timestamp intact without duplicate audit entries. No WhatsApp, SMS or email is sent by this endpoint.
+
+The response, as well as existing quotation list/get/approve/reject endpoints, conditionally include `Quotation.followedUpAt?: string`; old rows without a follow-up preserve their existing DTO shape. Requests without sessions return 401, cross-owner IDs 404, invalid resource IDs 422, and wrong Origin 403. Existing request rate limits apply.
+
+PowerShell `curl.exe` example using the signed-in cookie jar and exact `$base` URL:
+
+```powershell
+curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" -X POST "$base/api/quotations/QUOTATION_ID/follow-up"
+```
+
+The required Appwrite schema migration is an **optional** `followedUpAt datetime` column in the `quotations` table, added via private `npm run setup:appwrite`. Frontend `Mark as done` still stores browser-local marks; the frontend engineer must connect it to this endpoint before cross-device follow-up status appears in the UI.

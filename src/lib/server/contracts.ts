@@ -40,6 +40,7 @@ export interface Quotation {
   total: number;
   status: "pending" | "approved" | "rejected";
   reviewerNote?: string;
+  followedUpAt?: string;
   createdAt: string;
 }
 export interface AgentStep {

@@ -23,6 +23,7 @@ import type { AgentStep, AgentType, OperationRun, Quotation } from "@/types";
 import { Badge, Button, Card, CardHeader, Field, Input, PageHeader, Textarea } from "@/components/ui";
 import { AgentAvatar, agentMeta } from "@/components/agent-meta";
 import { notifyQuotationsChanged } from "@/components/layout/app-shell";
+import { CustomerReply } from "@/components/customer-reply";
 
 const samples = [
   {
@@ -593,6 +594,10 @@ function QuotationResult({ quotation, summary, onChange }: { quotation: Quotatio
             <dd className="tabular text-lg font-semibold text-fg">{formatCurrency(quotation.total)}</dd>
           </div>
         </dl>
+      </div>
+
+      <div className="px-5 pb-5">
+        <CustomerReply quotation={quotation} />
       </div>
 
       {quotation.status === "pending" && (

@@ -11,6 +11,7 @@ import type { ActivityLog, Quotation } from "@/types";
 import { Badge, Button, Card, EmptyState, ErrorState, PageHeader, Skeleton, Textarea } from "@/components/ui";
 import { ActorAvatar } from "@/components/agent-meta";
 import { notifyQuotationsChanged } from "@/components/layout/app-shell";
+import { CustomerReply } from "@/components/customer-reply";
 
 type Tab = "pending" | "approved" | "rejected" | "all";
 
@@ -258,6 +259,8 @@ function QuotationDetail({
             <div className="flex justify-between border-t border-border pt-2 font-semibold"><dt className="text-fg">Total</dt><dd className="tabular text-fg">{formatCurrency(quotation.total)}</dd></div>
           </dl>
         </div>
+
+        <CustomerReply quotation={quotation} />
 
         {quotation.status === "pending" ? (
           <div className="space-y-3 rounded-lg border border-border p-4">

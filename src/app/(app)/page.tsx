@@ -12,6 +12,7 @@ import type { AgentType, Quotation } from "@/types";
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, PageHeader, Skeleton } from "@/components/ui";
 import { ActorAvatar, AgentAvatar } from "@/components/agent-meta";
 import { CountUp } from "@/components/count-up";
+import { MINUTES_SAVED_PER_QUOTE } from "@/lib/quotation-docs";
 
 function weeklyVolume(quotations: Quotation[]) {
   if (isMockMode) return mockWeeklyVolume;
@@ -43,6 +44,7 @@ export default function DashboardPage() {
   const weekGenerated = volume.reduce((s, d) => s + d.quotations, 0);
   const weekApproved = volume.reduce((s, d) => s + d.approved, 0);
   const approvalRate = weekGenerated ? Math.round((weekApproved / weekGenerated) * 100) : 0;
+  const hoursSaved = Math.round((weekGenerated * MINUTES_SAVED_PER_QUOTE) / 60);
   const totalTasks = agents?.reduce((s, a) => s + a.tasksCompleted, 0) || 1;
 
   const kpis = stats
@@ -58,7 +60,7 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title={`${hello}, Nova Tech`}
-        description="Here's what your AI team has been working on."
+        description={quotations ? `Your AI team saved about ${hoursSaved} hours of manual work this week.` : "Here's what your AI team has been working on."}
         actions={
           <Button asChild>
             <Link href="/operations">
@@ -107,7 +109,7 @@ export default function DashboardPage() {
                   <h2 className="text-sm font-semibold text-fg">Quotation volume</h2>
                   <p className="mt-0.5 text-[13px] text-muted">Last 7 days</p>
                 </div>
-                <dl className="flex gap-6">
+                <dl className="flex flex-wrap gap-x-6 gap-y-2">
                   <div>
                     <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2 w-2 rounded-full bg-[var(--chart-1)]" />Generated</dt>
                     <dd className="tabular text-lg font-semibold text-fg">{loading ? "–" : weekGenerated}</dd>
@@ -119,6 +121,10 @@ export default function DashboardPage() {
                   <div>
                     <dt className="text-xs text-muted">Approval rate</dt>
                     <dd className="tabular text-lg font-semibold text-success">{loading ? "–" : `${approvalRate}%`}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted">Time saved</dt>
+                    <dd className="tabular text-lg font-semibold text-primary">{loading ? "–" : `~${hoursSaved}h`}</dd>
                   </div>
                 </dl>
               </div>

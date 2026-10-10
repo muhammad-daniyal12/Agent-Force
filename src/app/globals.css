@@ -2,81 +2,81 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Neutral stone palette, charcoal actions, one deep-green brand accent. */
+/* Cool neutral base, emerald actions, one vivid colour per agent. */
 :root {
-  --bg: #f6f5f3;
+  --bg: #f4f6f9;
   --surface: #ffffff;
-  --surface-2: #f2f1ee;
-  --border: #e6e4df;
-  --border-strong: #d4d1ca;
-  --fg: #1c1a17;
-  --muted: #67625b;
-  --subtle: #9c968d;
+  --surface-2: #eff2f6;
+  --border: #e2e7ee;
+  --border-strong: #cdd5df;
+  --fg: #0f172a;
+  --muted: #586274;
+  --subtle: #929db0;
 
-  --primary: #1c1a17;
+  --primary: #059669;
   --primary-fg: #ffffff;
-  --primary-soft: #eeede9;
+  --primary-soft: #e3f7ef;
 
-  --brand: #0f5c45;
-  --brand-soft: #e3efe9;
+  --brand: #059669;
+  --brand-soft: #e3f7ef;
 
-  --chart-1: #c9c4bb;
-  --chart-2: #0f5c45;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
 
-  --support: #35609c;
-  --support-soft: #e8eef7;
-  --inventory: #9a6512;
-  --inventory-soft: #f6eedd;
-  --sales: #2d7550;
-  --sales-soft: #e5f1ea;
+  --support: #2563eb;
+  --support-soft: #e6eefd;
+  --inventory: #d97706;
+  --inventory-soft: #fdf1df;
+  --sales: #7c3aed;
+  --sales-soft: #f0e9fe;
 
-  --success: #237a4b;
-  --success-soft: #e3f2e9;
-  --warning: #9a6512;
-  --warning-soft: #f8efdc;
-  --danger: #b83a32;
-  --danger-soft: #f9e7e5;
+  --success: #059669;
+  --success-soft: #e3f7ef;
+  --warning: #d97706;
+  --warning-soft: #fdf1df;
+  --danger: #dc2626;
+  --danger-soft: #fdeaea;
 
-  --shadow: 0 1px 2px rgb(28 26 23 / 0.04);
-  --shadow-lg: 0 12px 32px -8px rgb(28 26 23 / 0.16), 0 2px 6px rgb(28 26 23 / 0.05);
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 14px 36px -10px rgb(15 23 42 / 0.18), 0 2px 6px rgb(15 23 42 / 0.05);
 }
 
 .dark {
-  --bg: #11100e;
-  --surface: #191815;
-  --surface-2: #22201d;
-  --border: #2c2a26;
-  --border-strong: #3a3732;
-  --fg: #f1efea;
-  --muted: #a7a197;
-  --subtle: #716c64;
+  --bg: #0a0d12;
+  --surface: #11151c;
+  --surface-2: #181d26;
+  --border: #222a35;
+  --border-strong: #303a48;
+  --fg: #e8edf4;
+  --muted: #9aa5b5;
+  --subtle: #667286;
 
-  --primary: #f1efea;
-  --primary-fg: #191815;
-  --primary-soft: #2a2824;
+  --primary: #34d399;
+  --primary-fg: #04261a;
+  --primary-soft: #0c2a20;
 
-  --brand: #5cbf94;
-  --brand-soft: #16291f;
+  --brand: #34d399;
+  --brand-soft: #0c2a20;
 
-  --chart-1: #4a463f;
-  --chart-2: #5cbf94;
+  --chart-1: #60a5fa;
+  --chart-2: #34d399;
 
-  --support: #86a8dc;
-  --support-soft: #1a2230;
-  --inventory: #d9a54a;
-  --inventory-soft: #2b2213;
-  --sales: #6cc493;
-  --sales-soft: #16271d;
+  --support: #60a5fa;
+  --support-soft: #0f1d35;
+  --inventory: #fbbf24;
+  --inventory-soft: #2a1f0a;
+  --sales: #a78bfa;
+  --sales-soft: #1d1636;
 
-  --success: #6cc493;
-  --success-soft: #16271d;
-  --warning: #d9a54a;
-  --warning-soft: #2b2213;
-  --danger: #e57b72;
-  --danger-soft: #311a18;
+  --success: #34d399;
+  --success-soft: #0c2a20;
+  --warning: #fbbf24;
+  --warning-soft: #2a1f0a;
+  --danger: #f87171;
+  --danger-soft: #331517;
 
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.35);
-  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.6);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.65);
 }
 
 @theme inline {
@@ -143,8 +143,22 @@ body {
   animation: step-in 0.32s ease-out both;
 }
 
+/* Soft ring that pulses around the agent currently working. */
+@keyframes halo {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+.animate-halo {
+  animation: halo 1.3s ease-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-step-in,
+  .animate-halo,
   .animate-pulse,
   .animate-spin {
     animation: none;

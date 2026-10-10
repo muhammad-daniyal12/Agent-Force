@@ -34,7 +34,7 @@ function usePendingCount() {
 function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-primary">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-card">
         <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           <path d="M4 18 L12 5 L20 18" />
           <path d="M8 13 H16" />
@@ -63,7 +63,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary",
-              active ? "bg-surface-2 text-fg" : "text-muted hover:bg-surface-2 hover:text-fg",
+              active ? "bg-primary-soft text-fg" : "text-muted hover:bg-surface-2 hover:text-fg",
             )}
           >
             <Icon className={cn("h-4 w-4", active && "text-brand")} aria-hidden />

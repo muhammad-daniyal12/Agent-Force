@@ -41,10 +41,10 @@ export default function DashboardPage() {
 
   const kpis = stats
     ? [
-        { label: "Pending approvals", value: String(stats.pendingApprovals), icon: Clock, tone: "text-warning", hint: "Waiting for your review" },
-        { label: "Approved value", value: formatCurrencyShort(stats.approvedValue), icon: Wallet, tone: "text-brand", hint: formatCurrency(stats.approvedValue) },
-        { label: "Quotations generated", value: String(stats.totalQuotations), icon: FileText, tone: "text-muted", hint: "Drafted by Sales Agent" },
-        { label: "Low-stock products", value: String(stats.lowStockCount), icon: AlertTriangle, tone: "text-danger", hint: "Need restocking" },
+        { label: "Pending approvals", value: String(stats.pendingApprovals), icon: Clock, tone: "text-warning bg-warning-soft", hint: "Waiting for your review" },
+        { label: "Approved value", value: formatCurrencyShort(stats.approvedValue), icon: Wallet, tone: "text-success bg-success-soft", hint: formatCurrency(stats.approvedValue) },
+        { label: "Quotations generated", value: String(stats.totalQuotations), icon: FileText, tone: "text-support bg-support-soft", hint: "Drafted by Sales Agent" },
+        { label: "Low-stock products", value: String(stats.lowStockCount), icon: AlertTriangle, tone: "text-danger bg-danger-soft", hint: "Need restocking" },
       ]
     : [];
 
@@ -82,7 +82,7 @@ export default function DashboardPage() {
                   <Card key={label} className="p-4 sm:p-5">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-[13px] font-medium text-muted">{label}</p>
-                      <Icon className={cn("h-4 w-4 shrink-0", tone)} aria-hidden />
+                      <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", tone)}><Icon className="h-4 w-4" aria-hidden /></span>
                     </div>
                     <p className="tabular mt-3 text-2xl font-semibold tracking-tight text-fg sm:text-[28px]">{value}</p>
                     <p className="mt-1 text-xs text-subtle">{hint}</p>

@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Appwrite Sites SSR requires a deployable Node.js server bundle.
+  output: "standalone",
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

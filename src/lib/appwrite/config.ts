@@ -89,7 +89,7 @@ export function getServerKey(request?: Request): string {
 }
 
 export function demoTaxRate(): number {
-  const rate = Number(process.env.TAX_RATE ?? "0.08");
+  const rate = Number(process.env.TAX_RATE ?? "0.18");
   if (!Number.isFinite(rate) || rate < 0 || rate > 1)
     throw new ApiError(
       503,

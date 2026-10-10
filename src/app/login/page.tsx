@@ -169,8 +169,9 @@ function BrandPanel() {
         style={{ backgroundImage: "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)", backgroundSize: "44px 44px" }}
         aria-hidden
       />
-      <div className="animate-drift pointer-events-none absolute -right-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-lime-300/25 blur-3xl" aria-hidden />
-      <div className="animate-drift-slow pointer-events-none absolute -bottom-40 -left-24 h-[28rem] w-[28rem] rounded-full bg-teal-300/25 blur-3xl" aria-hidden />
+      {/* Soft glows in the panel's own teal family; lime stays in the text accents only. */}
+      <div className="animate-drift pointer-events-none absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-teal-200/15 blur-[100px]" aria-hidden />
+      <div className="animate-drift-slow pointer-events-none absolute -bottom-48 -left-32 h-[30rem] w-[30rem] rounded-full bg-cyan-300/10 blur-[100px]" aria-hidden />
 
       <div className="animate-fade-up relative flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white shadow-lg">

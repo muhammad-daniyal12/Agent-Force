@@ -3,21 +3,21 @@ import { resourceId } from "../src/lib/server/validation";
 import { scriptEnvironment, reportScriptFailure } from "./environment";
 
 const products = [
-  ["MOUSE-WL-01", "Wireless Mouse", "Mice", 29.99, 120, 10],
-  ["MOUSE-ERG-01", "Ergonomic Mouse", "Mice", 49.99, 30, 5],
-  ["KEY-MECH-01", "Mechanical Keyboard", "Keyboards", 89.99, 25, 5],
-  ["KEY-WL-01", "Wireless Keyboard", "Keyboards", 59.99, 40, 5],
-  ["MON-24-01", "24 Inch Monitor", "Monitors", 179.99, 20, 3],
-  ["MON-27-01", "27 Inch Monitor", "Monitors", 279.99, 2, 3],
-  ["HUB-USBC-01", "USB-C Hub", "Hubs", 79.99, 18, 5],
-  ["DOCK-USBC-01", "USB-C Docking Station", "Hubs", 149.99, 8, 3],
-  ["HEADSET-01", "Office Headset", "Audio", 69.99, 25, 5],
-  ["WEBCAM-HD-01", "HD Webcam", "Webcams", 49.99, 3, 5],
-  ["STAND-LAP-01", "Laptop Stand", "Accessories", 39.99, 35, 5],
-  ["CABLE-USBC-01", "USB-C Cable", "Cables", 12.99, 100, 15],
-  ["CABLE-HDMI-01", "HDMI Cable", "Cables", 9.99, 80, 10],
-  ["SPEAKER-01", "Desktop Speakers", "Audio", 59.99, 0, 3],
-  ["POWER-01", "Surge Protector", "Accessories", 24.99, 4, 5],
+  ["MOUSE-WL-01", "Wireless Mouse", "Mice", 2499, 120, 10],
+  ["MOUSE-ERG-01", "Ergonomic Mouse", "Mice", 3999, 30, 5],
+  ["KEY-MECH-01", "Mechanical Keyboard", "Keyboards", 12999, 25, 5],
+  ["KEY-WL-01", "Wireless Keyboard", "Keyboards", 7499, 40, 5],
+  ["MON-24-01", "24 Inch Monitor", "Monitors", 52999, 20, 3],
+  ["MON-27-01", "27 Inch Monitor", "Monitors", 74999, 2, 3],
+  ["HUB-USBC-01", "USB-C Hub", "Hubs", 6499, 18, 5],
+  ["DOCK-USBC-01", "USB-C Docking Station", "Hubs", 18999, 8, 3],
+  ["HEADSET-01", "Office Headset", "Audio", 4999, 25, 5],
+  ["WEBCAM-HD-01", "HD Webcam", "Webcams", 4999, 3, 5],
+  ["STAND-LAP-01", "Laptop Stand", "Accessories", 3499, 35, 5],
+  ["CABLE-USBC-01", "USB-C Cable", "Cables", 999, 100, 15],
+  ["CABLE-HDMI-01", "HDMI Cable", "Cables", 899, 80, 10],
+  ["SPEAKER-01", "Desktop Speakers", "Audio", 7499, 0, 3],
+  ["POWER-01", "Surge Protector", "Accessories", 2499, 4, 5],
 ] as const;
 
 async function main() {

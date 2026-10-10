@@ -156,7 +156,7 @@ export const businessSchema: {
       text("name", 120),
       text("phone", 20),
       text("email", 254),
-      { key: "categories", type: "varchar", size: 100, array: true, required: true },
+      { key: "categories", type: "varchar", size: 100, array: true, required: false },
     ],
     indexes: [history],
   },

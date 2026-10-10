@@ -196,3 +196,34 @@ curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" "
 ```
 
 **Provisioning:** `scripts/schema.ts` now declares an **optional** `customerPhone varchar(20)` column on the `quotations` table. Before deploying this branch or sending `customerPhone` in production, provision the new column with `npm run setup:appwrite` using the private setup key. The legacy browser-only phone store is not yet wired to this API and must be switched separately by the frontend engineer.
+
+
+## Dealers and restock orders (backend-v2)
+
+All routes require an authenticated owner session and return bare JSON DTOs. Create/update/delete/mark-sent enforce the existing exact Origin check and 32 KiB JSON request size limit. Owner IDs and direct permissions are never accepted from clients. Dealers and orders are in private TablesDB tables with empty grants; creation/edit/deletion and order marking produce audit logs.
+
+| Method | Route | Request | Response |
+| --- | --- | --- | --- |
+| GET | `/api/dealers` | None | `Dealer[]`, 200 |
+| POST | `/api/dealers` | `{ name, phone, email?, categories? }` | `Dealer`, 201 |
+| PATCH | `/api/dealers/:id` | Non-empty subset of editable dealer fields | `Dealer`, 200 |
+| DELETE | `/api/dealers/:id` | None | `{ ok: true }`, 200 |
+| POST | `/api/restock-orders/mark-sent` | `{ dealerId, productIds: string[] }` | `{ ok: true }`, 200 |
+| GET | `/api/restock-orders?status=sent&since=ISO` | Optional `status=draft|sent` and ISO 8601 `since` | `RestockOrder[]`, 200 |
+
+`Dealer` shape: `{ id, name, phone, email, categories, createdAt, updatedAt }`. The phone field is 10–15 digits (formatting stripped), email defaults to `""`, and categories defaults to `[]` (supplies all categories). Categories support at most 20 unique, nonempty strings of 100 characters maximum. Names are 1–120 characters. Bad values and unknown write fields return HTTP 422; cross-owner record access returns 404.
+
+`RestockOrder` shape: `{ id, dealerId, items: [{ productId, quantity }], status, sentAt?, createdAt }`. Currently only `sent` orders are created by the server; `draft` is reserved for possible future support. `mark-sent` records the owner's **manual confirmation** that a supplier order was sent; the server DOES NOT send WhatsApp messages or emails. Each of the 1–50 unique product IDs must belong to the signed-in owner and have `stock <= lowStockThreshold`. Quantities are calculated from current stock as `max(5, ceil((lowStockThreshold * 4 - stock) / 5) * 5)`. This stores intent only; product inventory is not increased or deducted. The entire operation and audit are transactional. The `since` filter applies to `sentAt`, inclusive, and supports the UI's 3-day recently ordered suppression.
+
+Authenticated PowerShell examples (using `$base`, `$cookieJar`, `$bodyFile`, and `Write-Body` as documented above):
+
+```powershell
+Write-Body @{ name = "Ali Traders"; phone = "0300 1112233"; email = "orders@alitraders.pk"; categories = @("Mice", "Cables") }
+$dealer = curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" "$base/api/dealers" | ConvertFrom-Json
+curl.exe --fail-with-body -b $cookieJar "$base/api/dealers"
+Write-Body @{ dealerId = $dealer.id; productIds = @("<actual-low-stock-product-id>") }
+curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" "$base/api/restock-orders/mark-sent"
+curl.exe --fail-with-body -b $cookieJar "$base/api/restock-orders?status=sent"
+```
+
+Provision `dealers` and `restock_orders` via `npm run setup:appwrite` with the private provisioning key before deploying this branch, then run `npm run check:appwrite`. The new backend API **is not yet wired into** the browser-based `src/lib/dealers.ts` and restock-panel UI; a separate frontend integration is required. The seed script adds two example dealers without replacing previously saved dealers, and existing browser-local dealers are not automatically migrated.

@@ -202,3 +202,15 @@ The new runtime settings API uses the existing `rows.read` and `rows.write` scop
 ## Backend-v2 quotation contact migration
 
 Add the optional `customerPhone varchar(20)` column to the existing `quotations` table via `npm run setup:appwrite` using a private provisioning key. This is backward compatible: existing quote rows do not require a phone value. Only the authenticated backend can return quotation phone numbers to the owner; all table/row grants must remain empty. Do not run the updated server with phone-bearing quotation requests until the optional column is available. Do not grant admin/schema scopes to the deployed Appwrite Site.
+
+
+## Backend-v2 dealers and restock orders
+
+The additive provisioning script creates two new server-only tables (Row Security on, no grants) and leaves old business data unchanged:
+
+- `dealers`: `owner_user_id varchar(36)` required, `name varchar(120)` required, `phone varchar(20)` required, `email varchar(254)` required, and optional `categories varchar(100)[]` for categories including the empty array. Index `owner_created`.
+- `restock_orders`: `owner_user_id varchar(36)`, `dealerId varchar(36)`, `itemsJson text`, and `status enum(draft,sent)` required; `sentAt datetime` optional. Index `owner_created`.
+
+Defaults: `APPWRITE_DEALERS_TABLE_ID=dealers`, `APPWRITE_RESTOCK_ORDERS_TABLE_ID=restock_orders`. On Appwrite Sites use the corresponding `AGENTFORCE_APPWRITE_*` aliases if overriding defaults. The runtime retains only `rows.read`, `rows.write`, `sessions.write` scopes; do not deploy setup keys.
+
+Before deploying new endpoints, rerun `npm run setup:appwrite` privately to create the two tables and optional quotation phone column, then `npm run check:appwrite` to verify all **eight** runtime-accessed tables. After schema setup, `npm run seed` adds two illustrative dealers for `SEED_OWNER_USER_ID` by name without replacing existing dealer records or products. Repeated seeding intentionally preserves manually edited stock and prices. Verify the dealer/category matching in the frontend before demoing; the client still uses browser-only dealer data until separately wired to these server endpoints.

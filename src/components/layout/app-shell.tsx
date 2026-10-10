@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { Bot, CheckCircle2, LayoutDashboard, Loader2, LogOut, Menu, Moon, Package, Settings, Sun, Workflow, X } from "lucide-react";
 import { api, ApiError, auth, isMockMode, type SessionUser } from "@/lib/api/client";
 import { SessionContext } from "@/components/session";
+import { BrandMark } from "@/components/brand-mark";
 import { useBusiness } from "@/lib/business";
 import { cn } from "@/lib/utils";
 
@@ -38,12 +39,7 @@ function usePendingCount() {
 function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-primary">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-card">
-        <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M4 18 L12 5 L20 18" />
-          <path d="M8 13 H16" />
-        </svg>
-      </div>
+      <BrandMark className="h-8 w-8 shrink-0" />
       <div className="leading-tight">
         <p className="text-[15px] font-semibold tracking-tight text-fg">AgentForce</p>
         <p className="text-[11px] text-muted">AI digital employees</p>

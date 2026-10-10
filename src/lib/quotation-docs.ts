@@ -4,6 +4,9 @@ import type { BusinessProfile } from "@/lib/business";
 import { toWhatsAppNumber } from "@/lib/business";
 import { formatCurrency, formatDate, shortId, taxLabel } from "@/lib/utils";
 
+/** The Relay mark in fixed colours (the print window has no theme variables). Keep in sync with BrandMark. */
+const AGENTFORCE_MARK_SVG = `<svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M8 34 L18 22 L28 30 L38 14" stroke="#059669" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="34" r="5" fill="#2563eb"/><circle cx="18" cy="22" r="5" fill="#d97706"/><circle cx="28" cy="30" r="5" fill="#7c3aed"/><circle cx="38" cy="14" r="7.5" fill="#059669"/><path d="M34.6 14.2 L37 16.6 L41.4 11.8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
 /** "Name, City" or just "Name". */
 const signature = (b: BusinessProfile) => [b.name, b.city].filter(Boolean).join(", ");
 
@@ -67,7 +70,8 @@ export function printQuotation(q: Quotation, biz: BusinessProfile) {
   td{padding:10px 0;border-bottom:1px solid #eff2f6} .r{text-align:right} .tag{font-size:10px;color:#d97706;background:#fdf1df;padding:2px 6px;border-radius:99px}
   .totals{margin-left:auto;width:280px;margin-top:16px} .totals div{display:flex;justify-content:space-between;padding:4px 0}
   .grand{border-top:2px solid #0f172a;margin-top:6px;padding-top:10px!important;font-size:16px;font-weight:700}
-  .foot{margin-top:48px;padding-top:16px;border-top:1px solid #e2e7ee;font-size:11px;color:#586274}
+  .foot{margin-top:48px;padding-top:16px;border-top:1px solid #e2e7ee;font-size:11px;color:#586274;display:flex;align-items:center;gap:10px}
+  .foot svg{width:22px;height:22px;flex:none}
   @media print{body{padding:24px}}
 </style></head><body>
 <div class="top"><div><div class="brand">${esc(biz.name)}</div><div class="muted">${esc([biz.city ? `${biz.city}, Pakistan` : "Pakistan", biz.phone, biz.email].filter(Boolean).join(" · "))}</div></div>
@@ -79,7 +83,7 @@ export function printQuotation(q: Quotation, biz: BusinessProfile) {
 ${q.discount > 0 ? `<div><span class="muted">Volume discount</span><span>−${formatCurrency(q.discount)}</span></div>` : ""}
 <div><span class="muted">${taxLabel(q)}</span><span>${formatCurrency(q.tax)}</span></div>
 <div class="grand"><span>Total</span><span>${formatCurrency(q.total)}</span></div></div>
-<div class="foot">Prepared by AgentForce AI agents and reviewed by ${esc(biz.name)}. Prices in Pakistani Rupees, inclusive of GST.</div>
+<div class="foot">${AGENTFORCE_MARK_SVG}<span>Prepared by AgentForce AI agents and reviewed by ${esc(biz.name)}. Prices in Pakistani Rupees, inclusive of GST.</span></div>
 <script>window.onload=()=>{window.print()}</script></body></html>`);
   win.document.close();
   return true;

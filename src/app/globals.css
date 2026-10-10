@@ -228,6 +228,10 @@ body {
   .animate-fade-up,
   .animate-grow,
   .animate-pop-in,
+  .animate-drift,
+  .animate-drift-slow,
+  .animate-shake,
+  .animate-check,
   .stagger > * {
     animation: none;
   }
@@ -237,3 +241,28 @@ body {
     transform: none;
   }
 }
+
+/* ---------- Login page ---------- */
+
+/* Background glows drift slowly so the brand panel feels alive without distracting. */
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, 30px) scale(1.08); }
+}
+.animate-drift { animation: drift 14s ease-in-out infinite; }
+.animate-drift-slow { animation: drift 20s ease-in-out infinite reverse; }
+
+/* Wrong password: a short horizontal shake on the form. */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.animate-shake { animation: shake 0.4s ease-in-out; }
+
+/* Success check draws itself after sign-in. */
+@keyframes draw-check {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+.animate-check { stroke-dasharray: 24; animation: draw-check 0.45s ease-out 0.1s both; }

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "setup:appwrite": "tsx scripts/setup-appwrite.ts",
     "check:appwrite": "tsx scripts/check-appwrite.ts",
+    "check:ai": "node --conditions=react-server --import tsx scripts/check-ai.ts",
     "seed": "tsx scripts/seed.ts",
     "prune:rate-limits": "tsx scripts/prune-rate-limits.ts",
     "test:backend": "node --conditions=react-server --import tsx --test src/lib/server/tests/*.test.ts",

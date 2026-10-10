@@ -1,4 +1,5 @@
 import "server-only";
+import { FunctionCallingConfigMode, GoogleGenAI } from "@google/genai";
 import type { Product } from "./contracts";
 import {
   fallbackInterpret,
@@ -38,23 +39,51 @@ export async function interpretRequest(
   request: string,
   catalog: Product[],
   deadline: number,
-): Promise<{ interpretation: Interpretation; fallback: boolean }> {
-  const fallback = () => ({
+): Promise<{
+  interpretation: Interpretation;
+  fallback: boolean;
+  fallbackReason?:
+    | "provider_disabled"
+    | "missing_configuration"
+    | "deadline"
+    | "invalid_endpoint"
+    | "invalid_output"
+    | "provider_error";
+  providerStatus?: number;
+}> {
+  const fallback = (
+    fallbackReason:
+      | "provider_disabled"
+      | "missing_configuration"
+      | "deadline"
+      | "invalid_endpoint"
+      | "invalid_output"
+      | "provider_error",
+    providerStatus?: number,
+  ) => ({
     interpretation: fallbackInterpret(request, catalog),
     fallback: true,
+    fallbackReason,
+    ...(providerStatus ? { providerStatus } : {}),
   });
   const provider = process.env.LLM_PROVIDER || "none";
-  if (!["openai", "anthropic"].includes(provider)) return fallback();
+  if (!["openai", "anthropic", "gemini"].includes(provider))
+    return fallback("provider_disabled");
   const key =
     provider === "openai"
       ? process.env.OPENAI_API_KEY
-      : process.env.ANTHROPIC_API_KEY;
+      : provider === "gemini"
+        ? process.env.GEMINI_API_KEY
+        : process.env.ANTHROPIC_API_KEY;
   const model =
     process.env.LLM_MODEL ||
     (provider === "openai"
       ? process.env.OPENAI_MODEL
-      : process.env.ANTHROPIC_MODEL);
-  if (!key || !model || key.startsWith("replace_with_")) return fallback();
+      : provider === "gemini"
+        ? process.env.GEMINI_MODEL
+        : process.env.ANTHROPIC_MODEL);
+  if (!key?.trim() || !model?.trim() || key.startsWith("replace_with_"))
+    return fallback("missing_configuration");
   const configuredTimeout = Number(process.env.LLM_TIMEOUT_MS ?? "12000");
   const timeout = Math.min(
     Number.isFinite(configuredTimeout)
@@ -63,8 +92,63 @@ export async function interpretRequest(
     20000,
     deadline - Date.now() - 8000,
   );
-  if (timeout < 100) return fallback();
+  if (timeout < 100) return fallback("deadline");
   try {
+    const content = JSON.stringify({
+      request,
+      catalog: catalog.slice(0, 200).map((product) => ({
+        sku: product.sku,
+        name: product.name,
+        category: product.category,
+      })),
+    });
+    if (provider === "gemini") {
+      // Official Google SDK, stateless extraction only.
+      const client = new GoogleGenAI({
+        apiKey: key,
+        httpOptions: { timeout, retryOptions: { attempts: 1 } },
+      });
+      const response = await client.models.generateContent({
+        model,
+        contents: content,
+        config: {
+          systemInstruction: instruction,
+          maxOutputTokens: 1000,
+          abortSignal: AbortSignal.timeout(timeout),
+          // Disable optional thinking for this small extraction on 2.5 Flash.
+          ...(model === "gemini-2.5-flash"
+            ? { thinkingConfig: { thinkingBudget: 0 } }
+            : {}),
+          tools: [
+            {
+              functionDeclarations: [
+                {
+                  name: "extract_request",
+                  parametersJsonSchema: parameters,
+                  description:
+                    "Extract customer intent and quantities; executes no business actions.",
+                },
+              ],
+            },
+          ],
+          toolConfig: {
+            functionCallingConfig: {
+              mode: FunctionCallingConfigMode.ANY,
+              allowedFunctionNames: ["extract_request"],
+            },
+          },
+        },
+      });
+      const calls = response.functionCalls ?? [];
+      const extraction =
+        calls.length === 1 && calls[0].name === "extract_request"
+          ? calls[0].args
+          : undefined;
+      const validated = interpretationSchema.safeParse(extraction);
+      return validated.success
+        ? { interpretation: validated.data, fallback: false }
+        : fallback("invalid_output");
+    }
     const base =
       process.env.LLM_BASE_URL ||
       (provider === "openai"
@@ -78,17 +162,7 @@ export async function interpretRequest(
       endpoint.username ||
       endpoint.password
     )
-      return fallback();
-    const content = JSON.stringify({
-      request,
-      catalog: catalog
-        .slice(0, 200)
-        .map((product) => ({
-          sku: product.sku,
-          name: product.name,
-          category: product.category,
-        })),
-    });
+      return fallback("invalid_endpoint");
     const body =
       provider === "openai"
         ? {
@@ -143,7 +217,7 @@ export async function interpretRequest(
     });
     if (!response.ok) {
       await response.body?.cancel();
-      return fallback();
+      return fallback("provider_error", response.status);
     }
     const result: unknown = await response.json();
     const object = result as {
@@ -167,8 +241,21 @@ export async function interpretRequest(
     const validated = interpretationSchema.safeParse(extraction);
     return validated.success
       ? { interpretation: validated.data, fallback: false }
-      : fallback();
-  } catch {
-    return fallback();
+      : fallback("invalid_output");
+  } catch (error: unknown) {
+    const status =
+      typeof error === "object" && error !== null
+        ? Number(
+            "statusCode" in error
+              ? error.statusCode
+              : "status" in error
+                ? error.status
+                : undefined,
+          )
+        : undefined;
+    return fallback(
+      "provider_error",
+      status && status >= 400 && status <= 599 ? status : undefined,
+    );
   } // Never leak provider keys, payloads, or raw exceptions.
 }

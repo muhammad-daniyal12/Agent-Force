@@ -24,20 +24,73 @@ async function main() {
   const { config, db } = scriptEnvironment();
   const ownerId = resourceId.parse(process.env.SEED_OWNER_USER_ID);
   let added = 0;
-  for (const [sku, name, category, price, stock, lowStockThreshold] of products) {
+  for (const [
+    sku,
+    name,
+    category,
+    price,
+    stock,
+    lowStockThreshold,
+  ] of products) {
     const args = { databaseId: config.databaseId, tableId: config.products };
-    const existing = await db.listRows({ ...args, queries: [Query.equal("owner_user_id", ownerId), Query.equal("sku", sku), Query.limit(1)] });
+    const existing = await db.listRows({
+      ...args,
+      queries: [
+        Query.equal("owner_user_id", ownerId),
+        Query.equal("sku", sku),
+        Query.limit(1),
+      ],
+    });
     if (existing.rows.length) continue; // Never reset live stock or overwrite edited products.
     const transaction = await db.createTransaction({ ttl: 30 });
     try {
       const productId = ID.unique();
-      await db.createRow({ ...args, rowId: productId, data: { owner_user_id: ownerId, sku, name, category, price, stock, lowStockThreshold }, permissions: [], transactionId: transaction.$id });
-      await db.createRow({ databaseId: config.databaseId, tableId: config.activity, rowId: ID.unique(), data: { owner_user_id: ownerId, actor: "Admin", action: "Seeded demo product", target: productId }, permissions: [], transactionId: transaction.$id });
-      await db.updateTransaction({ transactionId: transaction.$id, commit: true });
+      await db.createRow({
+        ...args,
+        rowId: productId,
+        data: {
+          owner_user_id: ownerId,
+          sku,
+          name,
+          category,
+          price,
+          stock,
+          lowStockThreshold,
+        },
+        permissions: [],
+        transactionId: transaction.$id,
+      });
+      await db.createRow({
+        databaseId: config.databaseId,
+        tableId: config.activity,
+        rowId: ID.unique(),
+        data: {
+          owner_user_id: ownerId,
+          actor: "Admin",
+          action: "Seeded demo product",
+          target: productId,
+        },
+        permissions: [],
+        transactionId: transaction.$id,
+      });
+      await db.updateTransaction({
+        transactionId: transaction.$id,
+        commit: true,
+      });
       added++;
-    } catch (error) { try { await db.updateTransaction({ transactionId: transaction.$id, rollback: true }); } catch {} throw error; }
+    } catch (error) {
+      try {
+        await db.updateTransaction({
+          transactionId: transaction.$id,
+          rollback: true,
+        });
+      } catch {}
+      throw error;
+    }
   }
-  console.log(`Seed complete: ${added} added, ${products.length - added} already existed. Existing inventory preserved.`);
+  console.log(
+    `Seed complete: ${added} added, ${products.length - added} already existed. Existing inventory preserved.`,
+  );
 }
 
 main().catch(reportScriptFailure);

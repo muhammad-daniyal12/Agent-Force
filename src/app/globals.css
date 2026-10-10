@@ -2,95 +2,81 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Navy + electric blue. Dark navy sidebar in both themes; cyan / orange / pink agents. */
+/* Cool neutral base, emerald actions, one vivid colour per agent. */
 :root {
-  --bg: #f4f7fc;
+  --bg: #f4f6f9;
   --surface: #ffffff;
-  --surface-2: #edf2f9;
-  --border: #e0e7f1;
-  --border-strong: #c9d4e4;
-  --fg: #0f1b3d;
-  --muted: #53607a;
-  --subtle: #8d99b0;
+  --surface-2: #eff2f6;
+  --border: #e2e7ee;
+  --border-strong: #cdd5df;
+  --fg: #0f172a;
+  --muted: #586274;
+  --subtle: #929db0;
 
-  --primary: #2563eb;
+  --primary: #059669;
   --primary-fg: #ffffff;
-  --primary-soft: #e8effd;
+  --primary-soft: #e3f7ef;
 
-  --brand: #2563eb;
-  --brand-soft: #e8effd;
+  --brand: #059669;
+  --brand-soft: #e3f7ef;
 
-  --chart-1: #2563eb;
-  --chart-2: #06b6d4;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
 
-  --support: #0891b2;
-  --support-soft: #dff6fb;
-  --inventory: #ea580c;
-  --inventory-soft: #ffeee3;
-  --sales: #db2777;
-  --sales-soft: #fde7f1;
+  --support: #2563eb;
+  --support-soft: #e6eefd;
+  --inventory: #d97706;
+  --inventory-soft: #fdf1df;
+  --sales: #7c3aed;
+  --sales-soft: #f0e9fe;
 
-  --success: #16a34a;
-  --success-soft: #e5f6eb;
+  --success: #059669;
+  --success-soft: #e3f7ef;
   --warning: #d97706;
-  --warning-soft: #fdf0dc;
+  --warning-soft: #fdf1df;
   --danger: #dc2626;
   --danger-soft: #fdeaea;
 
-  --sidebar: #0b1b3f;
-  --sidebar-fg: #c3cee6;
-  --sidebar-muted: #7f8fb2;
-  --sidebar-active: #1a2e5e;
-  --sidebar-border: #172a55;
-  --sidebar-accent: #60a5fa;
-
-  --shadow: 0 1px 2px rgb(15 27 61 / 0.06);
-  --shadow-lg: 0 14px 36px -10px rgb(15 27 61 / 0.22), 0 2px 6px rgb(15 27 61 / 0.06);
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 14px 36px -10px rgb(15 23 42 / 0.18), 0 2px 6px rgb(15 23 42 / 0.05);
 }
 
 .dark {
-  --bg: #070d1c;
-  --surface: #0d1529;
-  --surface-2: #142040;
-  --border: #1c2a4a;
-  --border-strong: #2a3a60;
-  --fg: #e6ecf7;
-  --muted: #97a3bd;
-  --subtle: #62708f;
+  --bg: #0a0d12;
+  --surface: #11151c;
+  --surface-2: #181d26;
+  --border: #222a35;
+  --border-strong: #303a48;
+  --fg: #e8edf4;
+  --muted: #9aa5b5;
+  --subtle: #667286;
 
-  --primary: #3b82f6;
-  --primary-fg: #ffffff;
-  --primary-soft: #12224a;
+  --primary: #34d399;
+  --primary-fg: #04261a;
+  --primary-soft: #0c2a20;
 
-  --brand: #60a5fa;
-  --brand-soft: #12224a;
+  --brand: #34d399;
+  --brand-soft: #0c2a20;
 
-  --chart-1: #3b82f6;
-  --chart-2: #22d3ee;
+  --chart-1: #60a5fa;
+  --chart-2: #34d399;
 
-  --support: #22d3ee;
-  --support-soft: #082a33;
-  --inventory: #fb923c;
-  --inventory-soft: #2e1a0c;
-  --sales: #f472b6;
-  --sales-soft: #33142a;
+  --support: #60a5fa;
+  --support-soft: #0f1d35;
+  --inventory: #fbbf24;
+  --inventory-soft: #2a1f0a;
+  --sales: #a78bfa;
+  --sales-soft: #1d1636;
 
-  --success: #4ade80;
-  --success-soft: #0d2a1a;
+  --success: #34d399;
+  --success-soft: #0c2a20;
   --warning: #fbbf24;
   --warning-soft: #2a1f0a;
   --danger: #f87171;
   --danger-soft: #331517;
 
-  --sidebar: #050b18;
-  --sidebar-fg: #b4c0da;
-  --sidebar-muted: #6c7a9a;
-  --sidebar-active: #12224a;
-  --sidebar-border: #111d38;
-  --sidebar-accent: #60a5fa;
-
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.45);
-  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.7);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.65);
 }
 
 @theme inline {
@@ -107,12 +93,6 @@
   --color-primary-soft: var(--primary-soft);
   --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-fg: var(--sidebar-fg);
-  --color-sidebar-muted: var(--sidebar-muted);
-  --color-sidebar-active: var(--sidebar-active);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent: var(--sidebar-accent);
   --color-support: var(--support);
   --color-support-soft: var(--support-soft);
   --color-inventory: var(--inventory);

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Bot, CheckCircle2, LayoutDashboard, Loader2, LogOut, Menu, Moon, Package, Settings, Sun, Workflow, X } from "lucide-react";
+import { BarChart3, BellRing, Bot, CheckCircle2, LayoutDashboard, Loader2, LogOut, Menu, Moon, Package, Settings, Sun, Workflow, X } from "lucide-react";
 import { api, ApiError, auth, isMockMode, type SessionUser } from "@/lib/api/client";
 import { SessionContext } from "@/components/session";
 import { BrandMark } from "@/components/brand-mark";
@@ -18,6 +18,8 @@ const nav = [
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/inventory", label: "Inventory", icon: Package },
   { href: "/approvals", label: "Approval Center", icon: CheckCircle2, badge: true },
+  { href: "/follow-ups", label: "Follow-ups", icon: BellRing },
+  { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

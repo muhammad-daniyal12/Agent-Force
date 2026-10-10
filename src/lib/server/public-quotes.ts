@@ -56,7 +56,7 @@ export async function handlePublicQuote(
   rawToken: string,
   method: "GET" | "POST",
 ): Promise<Response> {
-  return respond(async () => {
+  const response = await respond(async () => {
     if (method === "POST") checkOrigin(request);
     const db = serverTables(request);
     const token = validatedToken(rawToken);
@@ -136,6 +136,7 @@ export async function handlePublicQuote(
       respondedAt: accepted.respondedAt,
     }));
   });
+  return safeResponse(response);
 }
 
 function safeResponse(response: Response): Response {

@@ -353,7 +353,7 @@ export default function OperationsPage() {
           </Card>
 
           {phase === "done" && run && (
-            <div className="animate-step-in">
+            <div className="animate-pop-in">
               {quotation ? (
                 <QuotationResult quotation={quotation} summary={run.summary} onChange={setQuotation} />
               ) : (

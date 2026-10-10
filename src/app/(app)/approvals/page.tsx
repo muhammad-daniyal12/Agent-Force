@@ -99,7 +99,7 @@ function ApprovalCenter() {
                 description={tab === "pending" ? "You're all caught up. New AI drafts will show up here." : undefined}
               />
             ) : (
-              <ul className="divide-y divide-border">
+              <ul className="stagger divide-y divide-border">
                 {list.map((q) => {
                   const active = selected?.id === q.id;
                   return (
@@ -192,7 +192,7 @@ function QuotationDetail({
   }
 
   return (
-    <Card>
+    <Card className="animate-pop-in">
       <div className="border-b border-border px-5 py-4">
         <button onClick={onBack} className="mb-3 inline-flex items-center gap-1 text-[13px] font-medium text-muted hover:text-fg lg:hidden cursor-pointer">
           <ArrowLeft className="h-4 w-4" /> All quotations

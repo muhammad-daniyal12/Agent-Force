@@ -116,7 +116,7 @@ export default function InventoryPage() {
                   <th className="px-5 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="stagger divide-y divide-border">
                 {visible.map((p) => {
                   const state = stockState(p);
                   const pct = Math.min(100, (p.stock / Math.max(p.lowStockThreshold * 4, 1)) * 100);
@@ -133,7 +133,7 @@ export default function InventoryPage() {
                           <div className="w-20">
                             <p className="tabular text-[13px] font-medium text-fg">{p.stock} <span className="font-normal text-subtle">units</span></p>
                             <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-surface-2">
-                              <div className={cn("h-full rounded-full", state.bar)} style={{ width: `${Math.max(pct, p.stock > 0 ? 4 : 0)}%` }} />
+                              <div className={cn("animate-grow h-full rounded-full", state.bar)} style={{ width: `${Math.max(pct, p.stock > 0 ? 4 : 0)}%` }} />
                             </div>
                           </div>
                           <Badge tone={state.tone}>{state.label}</Badge>

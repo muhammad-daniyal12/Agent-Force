@@ -34,7 +34,7 @@ export default function AgentsPage() {
         <Card><ErrorState message={error} onRetry={reload} /></Card>
       ) : (
         <>
-          <div className="grid gap-5 lg:grid-cols-3">
+          <div className="stagger grid gap-5 lg:grid-cols-3">
             {loading || !agents
               ? [...Array(3)].map((_, i) => (
                   <Card key={i} className="space-y-4 p-6">
@@ -46,7 +46,7 @@ export default function AgentsPage() {
               : agents.map((agent) => {
                   const meta = agentMeta[agent.type];
                   return (
-                    <Card key={agent.id} className="flex flex-col p-6">
+                    <Card key={agent.id} className="hover-lift flex flex-col p-6">
                       <div className="flex items-start justify-between">
                         <AgentAvatar type={agent.type} size="lg" />
                         <Badge dot tone={agent.status === "offline" ? "neutral" : "success"}>

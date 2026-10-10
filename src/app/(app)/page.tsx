@@ -11,6 +11,7 @@ import { cn, formatCurrency, formatCurrencyShort, greeting, shortId, timeAgo } f
 import type { AgentType, Quotation } from "@/types";
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, PageHeader, Skeleton } from "@/components/ui";
 import { ActorAvatar, AgentAvatar } from "@/components/agent-meta";
+import { CountUp } from "@/components/count-up";
 
 function weeklyVolume(quotations: Quotation[]) {
   if (isMockMode) return mockWeeklyVolume;
@@ -46,10 +47,10 @@ export default function DashboardPage() {
 
   const kpis = stats
     ? [
-        { label: "Pending approvals", value: String(stats.pendingApprovals), icon: Clock, tone: "text-warning bg-warning-soft", accent: "bg-warning", hint: "Waiting for your review" },
-        { label: "Approved value", value: formatCurrencyShort(stats.approvedValue), icon: Wallet, tone: "text-success bg-success-soft", accent: "bg-success", hint: formatCurrency(stats.approvedValue) },
-        { label: "Quotations", value: String(stats.totalQuotations), icon: FileText, tone: "text-support bg-support-soft", accent: "bg-support", hint: "Drafted by Sales Agent" },
-        { label: "Low stock", value: String(stats.lowStockCount), icon: AlertTriangle, tone: "text-danger bg-danger-soft", accent: "bg-danger", hint: "Products to restock" },
+        { label: "Pending approvals", value: <CountUp value={stats.pendingApprovals} />, icon: Clock, tone: "text-warning bg-warning-soft", accent: "bg-warning", hint: "Waiting for your review" },
+        { label: "Approved value", value: <CountUp value={stats.approvedValue} format={formatCurrencyShort} />, icon: Wallet, tone: "text-success bg-success-soft", accent: "bg-success", hint: formatCurrency(stats.approvedValue) },
+        { label: "Quotations", value: <CountUp value={stats.totalQuotations} />, icon: FileText, tone: "text-support bg-support-soft", accent: "bg-support", hint: "Drafted by Sales Agent" },
+        { label: "Low stock", value: <CountUp value={stats.lowStockCount} />, icon: AlertTriangle, tone: "text-danger bg-danger-soft", accent: "bg-danger", hint: "Products to restock" },
       ]
     : [];
 
@@ -72,9 +73,9 @@ export default function DashboardPage() {
           <ErrorState message={error} onRetry={reload} />
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="stagger space-y-6">
           {/* KPIs */}
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+          <div className="stagger grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
             {loading || !stats
               ? [...Array(4)].map((_, i) => (
                   <Card key={i} className="p-5">
@@ -84,7 +85,7 @@ export default function DashboardPage() {
                   </Card>
                 ))
               : kpis.map(({ label, value, icon: Icon, tone, accent, hint }) => (
-                  <Card key={label} className="relative overflow-hidden p-5">
+                  <Card key={label} className="hover-lift relative overflow-hidden p-5">
                     <span className={cn("absolute inset-x-0 top-0 h-0.5", accent)} aria-hidden />
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-[13px] font-medium text-muted">{label}</p>
@@ -145,8 +146,8 @@ export default function DashboardPage() {
                         contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, color: "var(--fg)", boxShadow: "var(--shadow-lg)" }}
                         labelStyle={{ color: "var(--fg)", fontWeight: 600, marginBottom: 4 }}
                       />
-                      <Bar dataKey="quotations" name="Generated" fill="url(#gradGenerated)" radius={[6, 6, 0, 0]} maxBarSize={24} />
-                      <Bar dataKey="approved" name="Approved" fill="url(#gradApproved)" radius={[6, 6, 0, 0]} maxBarSize={24} />
+                      <Bar dataKey="quotations" name="Generated" fill="url(#gradGenerated)" radius={[6, 6, 0, 0]} maxBarSize={24} animationDuration={900} animationBegin={200} />
+                      <Bar dataKey="approved" name="Approved" fill="url(#gradApproved)" radius={[6, 6, 0, 0]} maxBarSize={24} animationDuration={900} animationBegin={350} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -180,7 +181,7 @@ export default function DashboardPage() {
                           </div>
                           <div className="mt-2 flex items-center gap-2">
                             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
-                              <div className={cn("h-full rounded-full", agentBar[agent.type])} style={{ width: `${(agent.tasksCompleted / totalTasks) * 100}%` }} />
+                              <div className={cn("animate-grow h-full rounded-full", agentBar[agent.type])} style={{ width: `${(agent.tasksCompleted / totalTasks) * 100}%` }} />
                             </div>
                             <span className="tabular w-16 text-right text-xs text-muted">{agent.tasksCompleted} tasks</span>
                           </div>
@@ -204,7 +205,7 @@ export default function DashboardPage() {
               ) : pending.length === 0 ? (
                 <EmptyState icon={CheckCircle2} title="You're all caught up" description="New AI-drafted quotations will appear here." />
               ) : (
-                <ul className="divide-y divide-border">
+                <ul className="stagger divide-y divide-border">
                   {pending.slice(0, 5).map((q) => (
                     <li key={q.id}>
                       <Link href={`/approvals?id=${q.id}`} className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-surface-2 outline-none focus-visible:bg-surface-2">

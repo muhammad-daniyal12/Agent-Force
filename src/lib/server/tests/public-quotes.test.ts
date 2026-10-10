@@ -67,7 +67,7 @@ async function approved() {
     customerName: "Ali",
     customerEmail: "ali@example.com",
     customerPhone: "+92 300 1234567",
-    request: "I need 10 wireless mice and 5 USB-C hubs, ali@example.com",
+    request: "I need 10 wireless mice and 5 USB-C hubs, my name is Ali, ali@example.com",
   })));
   assert.ok(run.quotation);
   const id = run.quotation.id;

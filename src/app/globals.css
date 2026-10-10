@@ -1,26 +1,239 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Cool neutral base, emerald actions, one vivid colour per agent. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface-2: #eff2f6;
+  --border: #e2e7ee;
+  --border-strong: #cdd5df;
+  --fg: #0f172a;
+  --muted: #586274;
+  --subtle: #929db0;
+
+  --primary: #059669;
+  --primary-fg: #ffffff;
+  --primary-soft: #e3f7ef;
+
+  --brand: #059669;
+  --brand-soft: #e3f7ef;
+
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+
+  --support: #2563eb;
+  --support-soft: #e6eefd;
+  --inventory: #d97706;
+  --inventory-soft: #fdf1df;
+  --sales: #7c3aed;
+  --sales-soft: #f0e9fe;
+
+  --success: #059669;
+  --success-soft: #e3f7ef;
+  --warning: #d97706;
+  --warning-soft: #fdf1df;
+  --danger: #dc2626;
+  --danger-soft: #fdeaea;
+
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 14px 36px -10px rgb(15 23 42 / 0.18), 0 2px 6px rgb(15 23 42 / 0.05);
+}
+
+.dark {
+  --bg: #0a0d12;
+  --surface: #11151c;
+  --surface-2: #181d26;
+  --border: #222a35;
+  --border-strong: #303a48;
+  --fg: #e8edf4;
+  --muted: #9aa5b5;
+  --subtle: #667286;
+
+  --primary: #34d399;
+  --primary-fg: #04261a;
+  --primary-soft: #0c2a20;
+
+  --brand: #34d399;
+  --brand-soft: #0c2a20;
+
+  --chart-1: #60a5fa;
+  --chart-2: #34d399;
+
+  --support: #60a5fa;
+  --support-soft: #0f1d35;
+  --inventory: #fbbf24;
+  --inventory-soft: #2a1f0a;
+  --sales: #a78bfa;
+  --sales-soft: #1d1636;
+
+  --success: #34d399;
+  --success-soft: #0c2a20;
+  --warning: #fbbf24;
+  --warning-soft: #2a1f0a;
+  --danger: #f87171;
+  --danger-soft: #331517;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.65);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-support: var(--support);
+  --color-support-soft: var(--support-soft);
+  --color-inventory: var(--inventory);
+  --color-inventory-soft: var(--inventory-soft);
+  --color-sales: var(--sales);
+  --color-sales-soft: var(--sales-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-lg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-step-in {
+  animation: step-in 0.32s ease-out both;
+}
+
+/* Soft ring that pulses around the agent currently working. */
+@keyframes halo {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+.animate-halo {
+  animation: halo 1.3s ease-out infinite;
+}
+
+/* Page and card entrance. Children of .stagger fade up one after another. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > * {
+  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.03s; }
+.stagger > *:nth-child(2) { animation-delay: 0.09s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.21s; }
+.stagger > *:nth-child(5) { animation-delay: 0.27s; }
+.stagger > *:nth-child(6) { animation-delay: 0.33s; }
+.stagger > *:nth-child(n + 7) { animation-delay: 0.39s; }
+
+/* Progress bars fill from the left. */
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.animate-grow {
+  transform-origin: left;
+  animation: grow-x 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+}
+
+/* Result cards pop in. */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-pop-in {
+  animation: pop-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Subtle lift on hoverable cards. */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step-in,
+  .animate-halo,
+  .animate-pulse,
+  .animate-spin,
+  .animate-fade-up,
+  .animate-grow,
+  .animate-pop-in,
+  .stagger > * {
+    animation: none;
+  }
+  .hover-lift,
+  .hover-lift:hover {
+    transition: none;
+    transform: none;
+  }
 }

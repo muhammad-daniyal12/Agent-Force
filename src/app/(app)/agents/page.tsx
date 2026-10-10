@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Ban, CalendarClock, Check, FileSpreadsheet, Lock, Megaphone, Sparkles } from "lucide-react";
+import { Ban, CalendarClock, Check, FileSpreadsheet, Lock, Megaphone, Plus } from "lucide-react";
 import { api } from "@/lib/api/client";
 import { useAsync } from "@/lib/use-async";
 import { timeAgo } from "@/lib/utils";
@@ -32,7 +32,7 @@ export default function AgentsPage() {
         description="Your digital employees. Each one has a clear job, limited permissions and a human supervisor."
         actions={
           <Button asChild>
-            <Link href="/operations"><Sparkles className="h-4 w-4" aria-hidden /> Assign a task</Link>
+            <Link href="/operations"><Plus className="h-4 w-4" aria-hidden /> Assign a task</Link>
           </Button>
         }
       />

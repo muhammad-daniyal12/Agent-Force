@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowRight, Check, CheckCircle2, ChevronDown, Circle, Loader2, RotateCcw, ShieldCheck, Sparkles, Wrench, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, CheckCircle2, ChevronDown, Circle, Loader2, Play, RotateCcw, ShieldCheck, Wrench, X } from "lucide-react";
 import { api, ApiError } from "@/lib/api/client";
 import { cn, formatCurrency, shortId } from "@/lib/utils";
 import type { AgentStep, AgentType, OperationRun, Quotation } from "@/types";
@@ -185,7 +185,7 @@ export default function OperationsPage() {
             </Field>
 
             <Button type="submit" size="lg" className="w-full" loading={busy}>
-              {!busy && <Sparkles className="h-4 w-4" aria-hidden />}
+              {!busy && <Play className="h-4 w-4" aria-hidden />}
               {busy ? "Agents working…" : "Run AI agents"}
             </Button>
 
@@ -397,7 +397,7 @@ function ToolOutput({ step }: { step: AgentStep }) {
         {[
           ["Subtotal", o.subtotal],
           [`Discount${o.discountRate ? ` (${Math.round(o.discountRate * 100)}%)` : ""}`, o.discount !== undefined ? -o.discount : undefined],
-          ["Tax", o.tax],
+          ["GST 18%", o.tax],
           ["Total", o.total],
         ].map(([label, value]) =>
           value === undefined ? null : (
@@ -447,7 +447,7 @@ function QuotationResult({ quotation: initial, summary }: { quotation: Quotation
           </div>
           <p className="mt-0.5 text-[13px] text-muted">For {quotation.customerName} · {quotation.customerEmail}</p>
         </div>
-        <Link href={`/approvals?id=${quotation.id}`} className="inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:underline">
+        <Link href={`/approvals?id=${quotation.id}`} className="inline-flex items-center gap-1 text-[13px] font-medium text-brand hover:underline">
           Open in Approval Center <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
       </div>
@@ -487,7 +487,7 @@ function QuotationResult({ quotation: initial, summary }: { quotation: Quotation
           {quotation.discount > 0 && (
             <div className="flex justify-between"><dt className="text-muted">Volume discount</dt><dd className="tabular text-success">−{formatCurrency(quotation.discount)}</dd></div>
           )}
-          <div className="flex justify-between"><dt className="text-muted">Tax</dt><dd className="tabular text-fg">{formatCurrency(quotation.tax)}</dd></div>
+          <div className="flex justify-between"><dt className="text-muted">GST (18%)</dt><dd className="tabular text-fg">{formatCurrency(quotation.tax)}</dd></div>
           <div className="flex justify-between border-t border-border pt-2 text-sm font-semibold"><dt className="text-fg">Total</dt><dd className="tabular text-fg">{formatCurrency(quotation.total)}</dd></div>
         </dl>
       </div>

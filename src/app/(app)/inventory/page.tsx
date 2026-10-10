@@ -255,8 +255,8 @@ function ProductDialog({
             </Field>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <Field label="Price (USD)" htmlFor="p-price" error={errors.price}>
-              <Input id="p-price" type="number" step="0.01" min="0" value={form.price} onChange={set("price")} />
+            <Field label="Price (Rs)" htmlFor="p-price" error={errors.price}>
+              <Input id="p-price" type="number" step="1" min="0" value={form.price} onChange={set("price")} />
             </Field>
             <Field label="Stock" htmlFor="p-stock" error={errors.stock}>
               <Input id="p-stock" type="number" min="0" value={form.stock} onChange={set("stock")} />

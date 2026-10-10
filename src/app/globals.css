@@ -2,67 +2,80 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Neutral stone palette, charcoal actions, one deep-green brand accent. */
 :root {
-  --bg: #f6f6f3;
+  --bg: #f6f5f3;
   --surface: #ffffff;
-  --surface-2: #f1f1ed;
-  --border: #e4e4de;
-  --border-strong: #d2d2ca;
-  --fg: #16161a;
-  --muted: #6b6b73;
-  --subtle: #9a9aa2;
+  --surface-2: #f2f1ee;
+  --border: #e6e4df;
+  --border-strong: #d4d1ca;
+  --fg: #1c1a17;
+  --muted: #67625b;
+  --subtle: #9c968d;
 
-  --primary: #3d3bd4;
+  --primary: #1c1a17;
   --primary-fg: #ffffff;
-  --primary-soft: #ececfd;
+  --primary-soft: #eeede9;
 
-  --support: #0b84c6;
-  --support-soft: #e3f3fc;
-  --inventory: #c27803;
-  --inventory-soft: #fdf3dd;
-  --sales: #0f9d63;
-  --sales-soft: #e0f6ec;
+  --brand: #0f5c45;
+  --brand-soft: #e3efe9;
 
-  --success: #0f9d63;
-  --success-soft: #e0f6ec;
-  --warning: #c27803;
-  --warning-soft: #fdf3dd;
-  --danger: #d33a3a;
-  --danger-soft: #fde8e8;
+  --chart-1: #c9c4bb;
+  --chart-2: #0f5c45;
 
-  --shadow: 0 1px 2px rgb(16 16 24 / 0.04), 0 1px 1px rgb(16 16 24 / 0.03);
-  --shadow-lg: 0 12px 32px -8px rgb(16 16 24 / 0.14), 0 2px 6px rgb(16 16 24 / 0.05);
+  --support: #35609c;
+  --support-soft: #e8eef7;
+  --inventory: #9a6512;
+  --inventory-soft: #f6eedd;
+  --sales: #2d7550;
+  --sales-soft: #e5f1ea;
+
+  --success: #237a4b;
+  --success-soft: #e3f2e9;
+  --warning: #9a6512;
+  --warning-soft: #f8efdc;
+  --danger: #b83a32;
+  --danger-soft: #f9e7e5;
+
+  --shadow: 0 1px 2px rgb(28 26 23 / 0.04);
+  --shadow-lg: 0 12px 32px -8px rgb(28 26 23 / 0.16), 0 2px 6px rgb(28 26 23 / 0.05);
 }
 
 .dark {
-  --bg: #0c0c0f;
-  --surface: #141418;
-  --surface-2: #1b1b21;
-  --border: #26262e;
-  --border-strong: #34343e;
-  --fg: #ededf0;
-  --muted: #9c9ca6;
-  --subtle: #6c6c76;
+  --bg: #11100e;
+  --surface: #191815;
+  --surface-2: #22201d;
+  --border: #2c2a26;
+  --border-strong: #3a3732;
+  --fg: #f1efea;
+  --muted: #a7a197;
+  --subtle: #716c64;
 
-  --primary: #7c7aff;
-  --primary-fg: #0c0c0f;
-  --primary-soft: #1f1f3d;
+  --primary: #f1efea;
+  --primary-fg: #191815;
+  --primary-soft: #2a2824;
 
-  --support: #4cb6ee;
-  --support-soft: #0f2633;
-  --inventory: #f0b23e;
-  --inventory-soft: #2d2311;
-  --sales: #38cf8f;
-  --sales-soft: #0f2a1f;
+  --brand: #5cbf94;
+  --brand-soft: #16291f;
 
-  --success: #38cf8f;
-  --success-soft: #0f2a1f;
-  --warning: #f0b23e;
-  --warning-soft: #2d2311;
-  --danger: #f26b6b;
-  --danger-soft: #331618;
+  --chart-1: #4a463f;
+  --chart-2: #5cbf94;
 
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --support: #86a8dc;
+  --support-soft: #1a2230;
+  --inventory: #d9a54a;
+  --inventory-soft: #2b2213;
+  --sales: #6cc493;
+  --sales-soft: #16271d;
+
+  --success: #6cc493;
+  --success-soft: #16271d;
+  --warning: #d9a54a;
+  --warning-soft: #2b2213;
+  --danger: #e57b72;
+  --danger-soft: #311a18;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35);
   --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.6);
 }
 
@@ -78,6 +91,8 @@
   --color-primary: var(--primary);
   --color-primary-fg: var(--primary-fg);
   --color-primary-soft: var(--primary-soft);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
   --color-support: var(--support);
   --color-support-soft: var(--support-soft);
   --color-inventory: var(--inventory);

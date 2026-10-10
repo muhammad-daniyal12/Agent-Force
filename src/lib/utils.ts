@@ -5,10 +5,23 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const rupees = new Intl.NumberFormat("en-PK", { maximumFractionDigits: 0 });
 
+/** PKR, e.g. "Rs 1,269,160". */
 export function formatCurrency(value: number) {
-  return currency.format(value);
+  return `${value < 0 ? "−" : ""}Rs ${rupees.format(Math.abs(Math.round(value)))}`;
+}
+
+/** Short PKR for tight spaces, e.g. "Rs 12.7 lakh", "Rs 1.2 crore". */
+export function formatCurrencyShort(value: number) {
+  if (value >= 10_000_000) return `Rs ${(value / 10_000_000).toFixed(1).replace(/\.0$/, "")} crore`;
+  if (value >= 100_000) return `Rs ${(value / 100_000).toFixed(1).replace(/\.0$/, "")} lakh`;
+  return formatCurrency(value);
+}
+
+export function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
 export function formatDate(iso: string) {

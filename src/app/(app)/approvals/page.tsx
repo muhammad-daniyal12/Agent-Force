@@ -254,7 +254,7 @@ function QuotationDetail({
           <dl className="ml-auto mt-3 w-full max-w-64 space-y-1.5 text-[13px]">
             <div className="flex justify-between"><dt className="text-muted">Subtotal</dt><dd className="tabular text-fg">{formatCurrency(quotation.subtotal)}</dd></div>
             {quotation.discount > 0 && <div className="flex justify-between"><dt className="text-muted">Discount</dt><dd className="tabular text-success">−{formatCurrency(quotation.discount)}</dd></div>}
-            <div className="flex justify-between"><dt className="text-muted">Tax</dt><dd className="tabular text-fg">{formatCurrency(quotation.tax)}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted">GST (18%)</dt><dd className="tabular text-fg">{formatCurrency(quotation.tax)}</dd></div>
             <div className="flex justify-between border-t border-border pt-2 font-semibold"><dt className="text-fg">Total</dt><dd className="tabular text-fg">{formatCurrency(quotation.total)}</dd></div>
           </dl>
         </div>

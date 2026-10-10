@@ -1,12 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, CheckCircle2, Clock, FileText, Inbox, Sparkles, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Clock, FileText, Inbox, Plus, Wallet } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api, isMockMode } from "@/lib/api/client";
 import { mockWeeklyVolume } from "@/lib/api/mock-data";
 import { useAsync } from "@/lib/use-async";
-import { cn, formatCurrency, shortId, timeAgo } from "@/lib/utils";
+import { cn, formatCurrency, formatCurrencyShort, greeting, shortId, timeAgo } from "@/lib/utils";
 import type { Quotation } from "@/types";
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, PageHeader, Skeleton } from "@/components/ui";
 import { ActorAvatar, AgentAvatar } from "@/components/agent-meta";
@@ -30,16 +31,19 @@ function weeklyVolume(quotations: Quotation[]) {
 
 export default function DashboardPage() {
   const { data, error, loading, reload } = useAsync(() =>
-    Promise.all([api.dashboard(), api.agents(), api.quotations(), api.activity(8)]),
+    Promise.all([api.dashboard(), api.agents(), api.quotations(), api.activity(6)]),
   );
   const [stats, agents, quotations, activity] = data ?? [];
   const pending = quotations?.filter((q) => q.status === "pending") ?? [];
+  // Computed after mount so the prerendered HTML and the client agree.
+  const [hello, setHello] = useState("Welcome back");
+  useEffect(() => setHello(greeting()), []);
 
   const kpis = stats
     ? [
-        { label: "Pending approvals", value: String(stats.pendingApprovals), icon: Clock, tone: "text-warning", hint: "Waiting for you" },
-        { label: "Approved value", value: formatCurrency(stats.approvedValue), icon: Wallet, tone: "text-success", hint: "All time" },
-        { label: "Quotations generated", value: String(stats.totalQuotations), icon: FileText, tone: "text-primary", hint: "By Sales Agent" },
+        { label: "Pending approvals", value: String(stats.pendingApprovals), icon: Clock, tone: "text-warning", hint: "Waiting for your review" },
+        { label: "Approved value", value: formatCurrencyShort(stats.approvedValue), icon: Wallet, tone: "text-brand", hint: formatCurrency(stats.approvedValue) },
+        { label: "Quotations generated", value: String(stats.totalQuotations), icon: FileText, tone: "text-muted", hint: "Drafted by Sales Agent" },
         { label: "Low-stock products", value: String(stats.lowStockCount), icon: AlertTriangle, tone: "text-danger", hint: "Need restocking" },
       ]
     : [];
@@ -47,12 +51,12 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="Good morning, Nova Tech"
+        title={`${hello}, Nova Tech`}
         description="Here's what your AI team has been working on today."
         actions={
           <Button asChild>
             <Link href="/operations">
-              <Sparkles className="h-4 w-4" aria-hidden /> New AI request
+              <Plus className="h-4 w-4" aria-hidden /> New customer request
             </Link>
           </Button>
         }
@@ -94,8 +98,8 @@ export default function DashboardPage() {
                 description="Last 7 days · generated vs approved"
                 action={
                   <div className="flex items-center gap-3 text-xs text-muted">
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-primary" />Generated</span>
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-success" />Approved</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-[var(--chart-1)]" />Generated</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-[var(--chart-2)]" />Approved</span>
                   </div>
                 }
               />
@@ -112,8 +116,8 @@ export default function DashboardPage() {
                         cursor={{ fill: "var(--surface-2)" }}
                         contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--fg)" }}
                       />
-                      <Bar dataKey="quotations" name="Generated" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={22} />
-                      <Bar dataKey="approved" name="Approved" fill="var(--success)" radius={[4, 4, 0, 0]} maxBarSize={22} />
+                      <Bar dataKey="quotations" name="Generated" fill="var(--chart-1)" radius={[4, 4, 0, 0]} maxBarSize={22} />
+                      <Bar dataKey="approved" name="Approved" fill="var(--chart-2)" radius={[4, 4, 0, 0]} maxBarSize={22} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -125,7 +129,7 @@ export default function DashboardPage() {
               <CardHeader
                 title="AI team"
                 description={stats ? `${stats.activeAgents} of ${agents?.length ?? 3} agents active` : "Agent status"}
-                action={<Link href="/agents" className="text-[13px] font-medium text-primary hover:underline">View</Link>}
+                action={<Link href="/agents" className="text-[13px] font-medium text-brand hover:underline">View</Link>}
               />
               <ul className="divide-y divide-border">
                 {loading || !agents
@@ -157,7 +161,7 @@ export default function DashboardPage() {
               <CardHeader
                 title="Pending approvals"
                 description="Quotations drafted by AI. Nothing is sent until you approve."
-                action={<Link href="/approvals" className="text-[13px] font-medium text-primary hover:underline">Open center</Link>}
+                action={<Link href="/approvals" className="text-[13px] font-medium text-brand hover:underline">Open center</Link>}
               />
               {loading ? (
                 <div className="space-y-3 p-5">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>

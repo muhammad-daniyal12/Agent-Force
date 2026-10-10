@@ -2,8 +2,7 @@
 // the real endpoints exist. Removed from the request path once NEXT_PUBLIC_USE_MOCK=false.
 import type { ActivityLog, AgentStep, OperationRun, Product, Quotation, QuotationItem } from "@/types";
 import { mockActivity, mockAgents, mockProducts, mockQuotations } from "./mock-data";
-
-const TAX_RATE = 0.08;
+import { priceQuote } from "./pricing";
 
 const db = {
   agents: structuredClone(mockAgents),
@@ -162,10 +161,7 @@ export const mock = {
     log("Inventory Agent", "checked stock for", items.map((i) => i.name).join(", "));
 
     // 3. Sales agent: build quotation
-    const subtotal = round(items.reduce((s, i) => s + i.total, 0));
-    const discountRate = subtotal > 2000 ? 0.1 : subtotal > 500 ? 0.05 : 0;
-    const discount = round(subtotal * discountRate);
-    const tax = round((subtotal - discount) * TAX_RATE);
+    const { subtotal, discountRate, discount, tax, total } = priceQuote(items.map((i) => i.total));
     const quotation: Quotation = {
       id: uid("quo"),
       customerName: input.customerName,
@@ -175,7 +171,7 @@ export const mock = {
       subtotal,
       discount,
       tax,
-      total: round(subtotal - discount + tax),
+      total,
       status: "pending",
       createdAt: nowIso(),
     };
@@ -186,7 +182,7 @@ export const mock = {
       status: "done",
       tool: "createQuotation",
       input: { items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })) },
-      output: { quotationId: quotation.id, subtotal, discountRate, discount, tax, total: quotation.total, status: "pending" },
+      output: { quotationId: quotation.id, subtotal, discountRate, discount, tax, taxLabel: "GST 18%", total, status: "pending" },
       durationMs: 690 + Math.round(Math.random() * 300),
     });
     log("Sales Agent", "created quotation", `QUO-${quotation.id.slice(-6).toUpperCase()} · ${input.customerName}`);
@@ -204,9 +200,7 @@ export const mock = {
   },
 };
 
-function round(n: number) {
-  return Math.round(n * 100) / 100;
-}
+const round = Math.round;
 
 const NUMBER_WORDS: Record<string, number> = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, twelve: 12, twenty: 20 };
 

@@ -42,6 +42,19 @@ npm run dev
 
 Setup creates compatible missing resources. Seeding skips existing owner/SKU pairs and preserves edited stock and prices. Open [localhost:3000](http://localhost:3000); frontend integration uses [docs/API.md](docs/API.md).
 
+Sign in at `/login` using an owner account created under Appwrite Auth. The frontend calls the real backend by default. `NEXT_PUBLIC_USE_MOCK=true` enables UI-only sample data and skips login; leave it unset or `false` for the real AI demo and deployment. This public flag contains no credentials and is fixed at build time.
+
+## Screens
+
+| Route | Screen |
+| --- | --- |
+| `/login` | Owner sign-in |
+| `/` | Dashboard and activity |
+| `/operations` | Customer requests and the three-agent workflow |
+| `/inventory` | Product catalog and stock management |
+| `/approvals` | Quotation review, approval, and rejection |
+| `/agents` | Agent capabilities and status |
+
 ## Verify real AI
 
 The Support Agent supports **Gemini, OpenAI, and Anthropic**. The project's verified Gemini demo model is `gemini-3.1-flash-lite`. Missing configuration, provider errors, invalid output, or timeouts trigger deterministic fallback.
@@ -84,6 +97,7 @@ Set these under **Sites → Settings → Environment variables**:
 | `AGENTFORCE_APPWRITE_DATABASE_ID` | `agentforce` |
 | `LLM_PROVIDER` | `gemini` |
 | `GEMINI_MODEL` | `gemini-3.1-flash-lite` |
+| `NEXT_PUBLIC_USE_MOCK` | `false`, or leave unset, to use authenticated backend APIs |
 | `GEMINI_API_KEY` | Save privately and mark **Secret** |
 | `LLM_TIMEOUT_MS` | `12000` |
 | `AGENT_RUN_TIMEOUT_MS` | `24000` |
@@ -111,3 +125,13 @@ npm run build
 All protected endpoints authenticate and authorize users. Business reads and writes are scoped to the verified owner. Tables have Row Security enabled with empty table and row grants; the browser has no public database access. The LLM extracts request details and cannot approve quotations, change prices, or mutate stock directly.
 
 Use [docs/API.md](docs/API.md) for the implemented frontend contract and authenticated smoke-test examples, [scripts/schema.ts](scripts/schema.ts) for the current executable schema, and [docs/APPWRITE_SETUP.md](docs/APPWRITE_SETUP.md) for the full setup and deployment handoff. Earlier planning documents remain for coordination; use these implementation guides for the working backend.
+
+## Team ownership
+
+| Path | Owner |
+| --- | --- |
+| `src/app/(app)/**`, `src/app/login/**`, `src/components/**`, `src/lib/api/**` | Frontend |
+| `src/app/api/**`, `src/lib/server/**`, `src/lib/appwrite/**`, `scripts/**` | Backend |
+| `src/types/index.ts` | Shared contract; coordinate changes with both developers |
+
+All frontend data requests go through `src/lib/api/client.ts`.

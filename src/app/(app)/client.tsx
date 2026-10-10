@@ -41,11 +41,11 @@ function VolumeTooltip({ active, payload }: { active?: boolean; payload?: { payl
       <p className="text-[13px] font-semibold text-fg">{d.day}</p>
       <dl className="mt-2 space-y-1.5">
         <div className="flex items-center justify-between gap-6">
-          <dt className="flex items-center gap-1.5 text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-generated,#4f7cff)]" />Generated</dt>
+          <dt className="flex items-center gap-1.5 text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-generated,#7cc313)]" />Generated</dt>
           <dd className="tabular font-medium text-fg">{d.quotations}</dd>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <dt className="flex items-center gap-1.5 text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-approved,#12b886)]" />Approved</dt>
+          <dt className="flex items-center gap-1.5 text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-approved,#0d9488)]" />Approved</dt>
           <dd className="tabular font-medium text-fg">{d.approved}</dd>
         </div>
       </dl>
@@ -151,11 +151,11 @@ export default function DashboardPage() {
                 </div>
                 <dl className="flex flex-wrap gap-x-6 gap-y-2">
                   <div>
-                    <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-generated,#4f7cff)]" />Generated</dt>
+                    <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-generated,#7cc313)]" />Generated</dt>
                     <dd className="tabular text-lg font-semibold text-fg">{loading ? "–" : weekGenerated}</dd>
                   </div>
                   <div>
-                    <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-approved,#12b886)]" />Approved</dt>
+                    <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-approved,#0d9488)]" />Approved</dt>
                     <dd className="tabular text-lg font-semibold text-fg">{loading ? "–" : weekApproved}</dd>
                   </div>
                   <div>
@@ -179,10 +179,10 @@ export default function DashboardPage() {
                       <XAxis dataKey="day" tickLine={false} axisLine={{ stroke: "var(--border-strong)" }} tick={{ fill: "var(--muted)", fontSize: 12 }} />
                       <YAxis allowDecimals={false} tickCount={4} tickLine={false} axisLine={false} tick={{ fill: "var(--subtle)", fontSize: 11 }} />
                       <Tooltip cursor={{ fill: "var(--surface-2)", radius: 6 }} content={<VolumeTooltip />} />
-                      <Bar dataKey="quotations" name="Generated" fill="var(--chart-generated,#4f7cff)" radius={[4, 4, 0, 0]} animationDuration={800}>
+                      <Bar dataKey="quotations" name="Generated" fill="var(--chart-generated,#7cc313)" radius={[4, 4, 0, 0]} animationDuration={800}>
                         <LabelList dataKey="quotations" content={<PeakLabel peak={peakGenerated} />} />
                       </Bar>
-                      <Bar dataKey="approved" name="Approved" fill="var(--chart-approved,#12b886)" radius={[4, 4, 0, 0]} animationDuration={800} animationBegin={120} />
+                      <Bar dataKey="approved" name="Approved" fill="var(--chart-approved,#0d9488)" radius={[4, 4, 0, 0]} animationDuration={800} animationBegin={120} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}

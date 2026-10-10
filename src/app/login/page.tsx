@@ -90,11 +90,11 @@ function LivePipeline() {
   return (
     <div className="rounded-3xl bg-white/[0.08] p-6 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.45)] ring-1 ring-white/20 backdrop-blur-md" aria-hidden>
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-100/80">Live: how a request is handled</p>
-        <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-100/80">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-100/80">Live: how a request is handled</p>
+        <span className="flex items-center gap-1.5 text-[11px] font-medium text-teal-100/80">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-70" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lime-300 opacity-70" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-lime-300" />
           </span>
           Running
         </span>
@@ -105,8 +105,8 @@ function LivePipeline() {
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20">
           <MessageSquareText className="h-4 w-4" />
         </span>
-        <div className="min-w-0 rounded-2xl rounded-tl-md bg-white px-4 py-3 text-emerald-950 shadow-sm">
-          <p className="text-[11px] font-semibold text-emerald-700">{request.from}</p>
+        <div className="min-w-0 rounded-2xl rounded-tl-md bg-white px-4 py-3 text-teal-950 shadow-sm">
+          <p className="text-[11px] font-semibold text-teal-700">{request.from}</p>
           <p className="mt-0.5 text-sm leading-snug">“{request.text}”</p>
         </div>
       </div>
@@ -123,7 +123,7 @@ function LivePipeline() {
                 <span
                   className={cn(
                     "relative flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-500",
-                    done && cn(solid, isYou ? "text-emerald-700" : "text-white", "shadow-lg"),
+                    done && cn(solid, isYou ? "text-teal-700" : "text-white", "shadow-lg"),
                     active && cn(tint, "animate-halo"),
                     !done && !active && "bg-white/10 text-white/55",
                   )}
@@ -144,12 +144,12 @@ function LivePipeline() {
 
       {/* Status + result */}
       <div className="mt-5 flex min-h-[48px] items-center justify-between gap-3 rounded-2xl bg-black/20 px-4 py-3">
-        <p key={status} className="animate-step-in flex items-center gap-2 text-[13px] text-emerald-50">
-          {approved && <Check className="h-4 w-4 text-emerald-300" strokeWidth={3} />}
+        <p key={status} className="animate-step-in flex items-center gap-2 text-[13px] text-teal-50">
+          {approved && <Check className="h-4 w-4 text-lime-300" strokeWidth={3} />}
           {status}
         </p>
         {step >= 3 && (
-          <span key={`${request.total}-${approved}`} className="animate-pop-in shrink-0 rounded-lg bg-white px-2.5 py-1 text-[13px] font-semibold tabular-nums text-emerald-800">
+          <span key={`${request.total}-${approved}`} className="animate-pop-in shrink-0 rounded-lg bg-white px-2.5 py-1 text-[13px] font-semibold tabular-nums text-teal-800">
             {request.total}
           </span>
         )}
@@ -162,15 +162,15 @@ function LivePipeline() {
 
 function BrandPanel() {
   return (
-    <aside className="relative hidden overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 px-12 py-10 text-white lg:flex lg:flex-col lg:justify-between xl:px-16">
+    <aside className="relative hidden overflow-hidden bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-950 px-12 py-10 text-white lg:flex lg:flex-col lg:justify-between xl:px-16">
       {/* Soft grid + drifting glows for depth */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.08]"
         style={{ backgroundImage: "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)", backgroundSize: "44px 44px" }}
         aria-hidden
       />
-      <div className="animate-drift pointer-events-none absolute -right-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-emerald-300/30 blur-3xl" aria-hidden />
-      <div className="animate-drift-slow pointer-events-none absolute -bottom-40 -left-24 h-[28rem] w-[28rem] rounded-full bg-cyan-300/20 blur-3xl" aria-hidden />
+      <div className="animate-drift pointer-events-none absolute -right-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-lime-300/25 blur-3xl" aria-hidden />
+      <div className="animate-drift-slow pointer-events-none absolute -bottom-40 -left-24 h-[28rem] w-[28rem] rounded-full bg-teal-300/25 blur-3xl" aria-hidden />
 
       <div className="animate-fade-up relative flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white shadow-lg">
@@ -178,22 +178,22 @@ function BrandPanel() {
         </div>
         <div className="leading-tight">
           <p className="text-lg font-semibold tracking-tight">AgentForce</p>
-          <p className="text-xs text-emerald-100/80">AI digital employees</p>
+          <p className="text-xs text-teal-100/80">AI digital employees</p>
         </div>
       </div>
 
       <div className="stagger relative my-10 max-w-xl">
         <h2 className="text-[2.6rem] font-semibold leading-[1.1] tracking-tight text-balance">
           Your AI team for support, stock and sales.{" "}
-          <span className="text-emerald-200">You stay in charge.</span>
+          <span className="text-lime-300">You stay in charge.</span>
         </h2>
-        <p className="mt-4 max-w-md text-base text-emerald-50/85">
+        <p className="mt-4 max-w-md text-base text-teal-50/85">
           Agents read customer messages, check stock and draft quotations. Nothing reaches a customer until you approve it.
         </p>
         <div className="mt-8">
           <LivePipeline />
         </div>
-        <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-emerald-100/80">
+        <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-teal-100/80">
           <MapPin className="h-3.5 w-3.5" aria-hidden />
           Built for businesses in
           {["Lahore", "Karachi", "Islamabad", "Faisalabad"].map((city) => (
@@ -210,21 +210,21 @@ function BrandPanel() {
           <dd className="text-2xl font-semibold tracking-tight tabular-nums">
             ~<CountUp value={3} duration={1200} /> sec
           </dd>
-          <dd className="text-xs text-emerald-100/75">per quotation</dd>
+          <dd className="text-xs text-teal-100/75">per quotation</dd>
         </div>
         <div>
           <dt className="sr-only">Time saved</dt>
           <dd className="text-2xl font-semibold tracking-tight tabular-nums">
             <CountUp value={20} duration={1200} /> min
           </dd>
-          <dd className="text-xs text-emerald-100/75">saved per request</dd>
+          <dd className="text-xs text-teal-100/75">saved per request</dd>
         </div>
         <div>
           <dt className="sr-only">Approval</dt>
           <dd className="text-2xl font-semibold tracking-tight tabular-nums">
             <CountUp value={100} duration={1400} />%
           </dd>
-          <dd className="text-xs text-emerald-100/75">human-approved</dd>
+          <dd className="text-xs text-teal-100/75">human-approved</dd>
         </div>
       </dl>
     </aside>

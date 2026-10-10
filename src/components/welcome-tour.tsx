@@ -85,7 +85,7 @@ function ApproveArt() {
       <p className="text-xl font-semibold tracking-tight">Rs 210,159</p>
       <div className="mt-3 flex gap-2">
         <span className="flex-1 rounded-lg border border-slate-200 py-1.5 text-center text-xs font-medium text-slate-600">Reject</span>
-        <span className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-emerald-600 py-1.5 text-xs font-semibold text-white">
+        <span className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-teal-700 py-1.5 text-xs font-semibold text-white">
           <Check className="h-3.5 w-3.5" strokeWidth={3} /> Approve
         </span>
       </div>
@@ -137,7 +137,7 @@ const steps: Step[] = [
     eyebrow: "Welcome",
     title: "Meet your AI team",
     text: "Three AI employees now work for you: Support reads customer messages, Inventory checks your stock and Sales prepares quotations. Here's a one-minute tour.",
-    banner: "from-emerald-500 via-emerald-600 to-teal-700",
+    banner: "from-teal-500 via-teal-600 to-emerald-800",
     art: () => <WelcomeArt />,
   },
   {
@@ -151,7 +151,7 @@ const steps: Step[] = [
     eyebrow: "Approval Center",
     title: "You approve, always",
     text: "Nothing reaches a customer until you press Approve. Then send the AI-written reply on WhatsApp, by email or as a branded PDF.",
-    banner: "from-emerald-500 via-teal-600 to-cyan-700",
+    banner: "from-lime-500 via-green-600 to-teal-700",
     art: () => <ApproveArt />,
   },
   {

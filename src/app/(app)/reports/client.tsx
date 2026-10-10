@@ -162,7 +162,7 @@ export default function ReportsPage() {
                     <li key={p.name} className="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] items-center gap-3 text-[13px] sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)_auto]">
                       <span className="truncate text-fg" title={p.name}>{p.name}</span>
                       <span className="h-2 overflow-hidden rounded-full bg-surface-2">
-                        <span className="animate-grow block h-full rounded-full bg-[var(--chart-generated,#4f7cff)]" style={{ width: `${(p.qty / max) * 100}%` }} />
+                        <span className="animate-grow block h-full rounded-full bg-[var(--chart-generated,#7cc313)]" style={{ width: `${(p.qty / max) * 100}%` }} />
                       </span>
                       <span className="tabular text-right">
                         <span className="font-semibold text-fg">{p.qty}</span> <span className="text-muted">units</span>

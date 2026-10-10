@@ -50,18 +50,66 @@ async function http<T>(path: string, init?: RequestInit, { redirectOn401 = true 
 
 const DEMO_USER: SessionUser = { id: "demo", name: "Nova Tech Supplies", email: "owner@novatech.pk" };
 
+// Demo mode keeps a fake session in this browser so sign-in and sign-out behave like the real app.
+const DEMO_SESSION_KEY = "agentforce.demo-session";
+const demoSession = {
+  get: (): SessionUser | null => {
+    try {
+      const raw = localStorage.getItem(DEMO_SESSION_KEY);
+      return raw ? (JSON.parse(raw) as SessionUser) : null;
+    } catch {
+      return null;
+    }
+  },
+  set: (user: SessionUser) => {
+    try {
+      localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(user));
+    } catch {
+      // Storage blocked: the demo session lasts until the page reloads.
+    }
+  },
+  clear: () => {
+    try {
+      localStorage.removeItem(DEMO_SESSION_KEY);
+    } catch {
+      // Nothing stored.
+    }
+  },
+};
+
 export const auth = {
-  me: async (): Promise<SessionUser> =>
-    USE_MOCK ? DEMO_USER : (await http<{ data: { user: SessionUser } }>("/api/auth/me", undefined, { redirectOn401: false })).data.user,
+  /** Current owner; rejects with a 401 ApiError when nobody is signed in. */
+  me: async (): Promise<SessionUser> => {
+    if (USE_MOCK) {
+      const user = demoSession.get();
+      if (!user) throw new ApiError("Authentication required.", 401);
+      return user;
+    }
+    return (await http<{ data: { user: SessionUser } }>("/api/auth/me", undefined, { redirectOn401: false })).data.user;
+  },
 
-  login: async (email: string, password: string): Promise<SessionUser> =>
-    USE_MOCK
-      ? DEMO_USER
-      : (await http<{ data: { user: SessionUser } }>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }, { redirectOn401: false })).data.user,
+  login: async (email: string, password: string): Promise<SessionUser> => {
+    if (USE_MOCK) {
+      await wait(500);
+      const user = { ...DEMO_USER, email: email || DEMO_USER.email };
+      demoSession.set(user);
+      return user;
+    }
+    return (await http<{ data: { user: SessionUser } }>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }, { redirectOn401: false })).data.user;
+  },
 
+  /** Ends the session. Throws if the server couldn't revoke it, so the UI never pretends to be signed out. */
   logout: async (): Promise<void> => {
-    if (USE_MOCK) return;
-    await http("/api/auth/logout", { method: "POST" }, { redirectOn401: false }).catch(() => undefined);
+    if (USE_MOCK) {
+      demoSession.clear();
+      return;
+    }
+    try {
+      await http("/api/auth/logout", { method: "POST" }, { redirectOn401: false });
+    } catch (err) {
+      // 401 means the session was already gone (the backend still expires the cookie): that's signed out.
+      if (!(err instanceof ApiError && err.status === 401)) throw err;
+    }
   },
 };
 

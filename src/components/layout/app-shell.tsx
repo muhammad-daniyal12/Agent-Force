@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Bot, CheckCircle2, LayoutDashboard, LogOut, Menu, Moon, Package, Settings, Sun, Workflow, X } from "lucide-react";
+import { Bot, CheckCircle2, LayoutDashboard, Loader2, LogOut, Menu, Moon, Package, Settings, Sun, Workflow, X } from "lucide-react";
 import { api, ApiError, auth, isMockMode, type SessionUser } from "@/lib/api/client";
 import { SessionContext } from "@/components/session";
 import { useBusiness } from "@/lib/business";
@@ -142,21 +143,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- close the mobile drawer on navigation
   useEffect(() => setOpen(false), [pathname]);
 
-  // Every business page needs a signed-in owner; send everyone else to /login.
-  useEffect(() => {
+  // "checking" until /api/auth/me answers; pages only render once the owner is confirmed.
+  const [session, setSession] = useState<"checking" | "ready" | "error">("checking");
+  const [signingOut, setSigningOut] = useState(false);
+
+  const checkSession = useCallback(() => {
+    setSession("checking");
     auth
       .me()
-      .then(setUser)
+      .then((u) => {
+        setUser(u);
+        setSession("ready");
+      })
       .catch((err) => {
-        if (err instanceof ApiError && err.status === 401) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+        if (err instanceof ApiError && err.status === 401) router.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+        else setSession("error");
       });
-    // Only on first mount; later 401s are handled by the API client.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router]);
+
+  // Every business page needs a signed-in owner; send everyone else to /login.
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- session check on mount
+  useEffect(() => checkSession(), [checkSession]);
 
   async function logout() {
-    await auth.logout();
-    router.replace("/login");
+    setSigningOut(true);
+    try {
+      await auth.logout();
+      setUser(null);
+      setSession("checking");
+      router.replace("/login");
+    } catch {
+      toast.error("Couldn't sign out", { description: "Check your connection and try again." });
+      setSigningOut(false);
+    }
   }
 
   const footer = <SidebarFooter user={user} onLogout={logout} />;
@@ -214,7 +233,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <main className="overflow-x-clip lg:pl-64">
         <div key={pathname} className="animate-fade-up mx-auto w-full max-w-[1360px] px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
-          {children}
+          {session === "ready" ? (
+            children
+          ) : session === "error" ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-24 text-center" role="alert">
+              <p className="text-sm font-medium text-fg">Can&apos;t reach AgentForce right now</p>
+              <p className="max-w-sm text-[13px] text-muted">The server didn&apos;t respond. Check your connection, then try again.</p>
+              <button
+                type="button"
+                onClick={checkSession}
+                className="mt-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg shadow-card hover:bg-surface-2 cursor-pointer"
+              >
+                Try again
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 py-24 text-sm text-muted" aria-live="polite">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {signingOut ? "Signing out…" : "Checking your session…"}
+            </div>
+          )}
         </div>
       </main>
     </div>

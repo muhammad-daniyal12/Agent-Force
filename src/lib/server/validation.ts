@@ -45,11 +45,11 @@ export const customerPhoneInput = z
   .refine(
     (value) =>
       value === "" ||
-      (/^\\+?[0-9\\s().-]+$/.test(value) &&
-        /^\\d{10,15}$/.test(value.replace(/\\D/g, ""))),
+      (/^\+?[0-9\s().-]+$/.test(value) &&
+        /^\d{10,15}$/.test(value.replace(/\D/g, ""))),
     "Phone must contain 10 to 15 digits (optional spaces, +, dots, hyphens or parentheses).",
   )
-  .transform((value) => value ? value.replace(/\\D/g, "") : undefined);
+  .transform((value) => value ? value.replace(/\D/g, "") : undefined);
 
 export const operationInput = z
   .object({

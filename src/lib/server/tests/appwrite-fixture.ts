@@ -167,6 +167,11 @@ export async function appwriteFixture() {
       }
       if (key !== "test-server-key") fail(401, "general_unauthorized_scope");
       if (path === "/tablesdb/transactions" && method === "POST") {
+        if (
+          body.ttl !== undefined &&
+          (!Number.isInteger(body.ttl) || body.ttl < 60)
+        )
+          fail(400, "general_argument_invalid");
         const id = `transaction-${++sequence}`;
         transactions.set(id, {
           rows: cloneRows(),

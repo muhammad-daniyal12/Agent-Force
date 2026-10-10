@@ -150,7 +150,8 @@ export class BusinessStore {
   async transaction<T>(
     work: (transactionId: string) => Promise<T>,
   ): Promise<T> {
-    const transaction = await this.db.createTransaction({ ttl: 30 });
+    // Appwrite Cloud requires a transaction TTL of at least 60 seconds.
+    const transaction = await this.db.createTransaction({ ttl: 60 });
     try {
       const value = await work(transaction.$id);
       await this.db.updateTransaction({

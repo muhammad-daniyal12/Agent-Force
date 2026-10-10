@@ -74,6 +74,11 @@ the supplied AgentStep array. Text limits are additionally enforced in the API.
 Current SDK operations use `TablesDB`, `createTable`, typed column methods,
 `createRow`, and transactions. No collection/document CRUD is used.
 
+The seed script and backend use a 60-second transaction TTL, meeting Appwrite
+Cloud's minimum. They commit or roll back promptly; this TTL is independent of
+the Site's 30-second request timeout. The HTTP test fixture also enforces the
+minimum so a shorter transaction TTL cannot pass the backend tests.
+
 Every business table has key index `owner_created` on
 `owner_user_id ASC, $createdAt DESC, $id DESC`. Additional indexes:
 

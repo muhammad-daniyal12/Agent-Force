@@ -42,7 +42,7 @@ async function main() {
       ],
     });
     if (existing.rows.length) continue; // Never reset live stock or overwrite edited products.
-    const transaction = await db.createTransaction({ ttl: 30 });
+    const transaction = await db.createTransaction({ ttl: 60 });
     try {
       const productId = ID.unique();
       await db.createRow({

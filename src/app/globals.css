@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --surface-2: #f1f1ed;
+  --border: #e4e4de;
+  --border-strong: #d2d2ca;
+  --fg: #16161a;
+  --muted: #6b6b73;
+  --subtle: #9a9aa2;
+
+  --primary: #3d3bd4;
+  --primary-fg: #ffffff;
+  --primary-soft: #ececfd;
+
+  --support: #0b84c6;
+  --support-soft: #e3f3fc;
+  --inventory: #c27803;
+  --inventory-soft: #fdf3dd;
+  --sales: #0f9d63;
+  --sales-soft: #e0f6ec;
+
+  --success: #0f9d63;
+  --success-soft: #e0f6ec;
+  --warning: #c27803;
+  --warning-soft: #fdf3dd;
+  --danger: #d33a3a;
+  --danger-soft: #fde8e8;
+
+  --shadow: 0 1px 2px rgb(16 16 24 / 0.04), 0 1px 1px rgb(16 16 24 / 0.03);
+  --shadow-lg: 0 12px 32px -8px rgb(16 16 24 / 0.14), 0 2px 6px rgb(16 16 24 / 0.05);
+}
+
+.dark {
+  --bg: #0c0c0f;
+  --surface: #141418;
+  --surface-2: #1b1b21;
+  --border: #26262e;
+  --border-strong: #34343e;
+  --fg: #ededf0;
+  --muted: #9c9ca6;
+  --subtle: #6c6c76;
+
+  --primary: #7c7aff;
+  --primary-fg: #0c0c0f;
+  --primary-soft: #1f1f3d;
+
+  --support: #4cb6ee;
+  --support-soft: #0f2633;
+  --inventory: #f0b23e;
+  --inventory-soft: #2d2311;
+  --sales: #38cf8f;
+  --sales-soft: #0f2a1f;
+
+  --success: #38cf8f;
+  --success-soft: #0f2a1f;
+  --warning: #f0b23e;
+  --warning-soft: #2d2311;
+  --danger: #f26b6b;
+  --danger-soft: #331618;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-support: var(--support);
+  --color-support-soft: var(--support-soft);
+  --color-inventory: var(--inventory);
+  --color-inventory-soft: var(--inventory-soft);
+  --color-sales: var(--sales);
+  --color-sales-soft: var(--sales-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --shadow-card: var(--shadow);
+  --shadow-pop: var(--shadow-lg);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-step-in {
+  animation: step-in 0.32s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step-in,
+  .animate-pulse,
+  .animate-spin {
+    animation: none;
+  }
+}

@@ -131,17 +131,17 @@ This follows [Sites SSR credentials](https://appwrite.io/docs/products/sites/ren
 
 Set these under **Sites -> Settings -> Environment variables**, then redeploy:
 
-| Variable                                | Value / handling                                                                                            |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `APP_ORIGIN`                            | Exact deployed HTTPS origin, without trailing slash. Use the domain on which users actually access the app. |
-| `AGENTFORCE_APPWRITE_DATABASE_ID`       | `agentforce`, or the separately provisioned current database ID.                                            |
-| `LLM_PROVIDER`                          | `none` for fallback; `openai` or `anthropic` to enable a provider.                                          |
-| `OPENAI_MODEL` or `ANTHROPIC_MODEL`     | Exact model available in your provider account; needed only with that provider.                             |
-| `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` | Mark **Secret**; optional for fallback. Never prefix with NEXT_PUBLIC_.                                     |
-| `TAX_RATE`                              | `0.08` is a configurable **demo** setting, not a verified legal rate.                                       |
-| `LLM_TIMEOUT_MS`                        | `12000`                                                                                                     |
-| `AGENT_RUN_TIMEOUT_MS`                  | `24000`                                                                                                     |
-| `APP_CURRENCY`                          | Coordinate demo display currency with the frontend; shared DTOs do not add a currency field.                |
+| Variable                                                   | Value / handling                                                                                            |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `APP_ORIGIN`                                               | Exact deployed HTTPS origin, without trailing slash. Use the domain on which users actually access the app. |
+| `AGENTFORCE_APPWRITE_DATABASE_ID`                          | `agentforce`, or the separately provisioned current database ID.                                            |
+| `LLM_PROVIDER`                                             | `none` for fallback; `gemini`, `openai`, or `anthropic` to enable a provider.                               |
+| `GEMINI_MODEL`, `OPENAI_MODEL`, or `ANTHROPIC_MODEL`       | Exact model available in your selected provider account.                                                    |
+| `GEMINI_API_KEY`, `OPENAI_API_KEY`, or `ANTHROPIC_API_KEY` | Mark **Secret**; never prefix with NEXT_PUBLIC_.                                                            |
+| `TAX_RATE`                                                 | `0.08` is a configurable **demo** setting, not a verified legal rate.                                       |
+| `LLM_TIMEOUT_MS`                                           | `12000`                                                                                                     |
+| `AGENT_RUN_TIMEOUT_MS`                                     | `24000`                                                                                                     |
+| `APP_CURRENCY`                                             | Coordinate demo display currency with the frontend; shared DTOs do not add a currency field.                |
 
 For custom table IDs, set `AGENTFORCE_APPWRITE_PRODUCTS_TABLE_ID`,
 `AGENTFORCE_APPWRITE_QUOTATIONS_TABLE_ID`, `AGENTFORCE_APPWRITE_AGENT_RUNS_TABLE_ID`,
@@ -158,6 +158,21 @@ Storage failure still returns a safe error rather than inventing inventory.
 Changing environment variables requires a new Site deployment.
 
 ## Verification and team handoff
+
+For a real AI readiness check, configure `LLM_PROVIDER=gemini`, `GEMINI_MODEL`,
+and `GEMINI_API_KEY` privately in `.env.local`, then run `npm run check:ai`.
+This project's verified demo model is `gemini-3.1-flash-lite`.
+The Support Agent uses Google's official `@google/genai` SDK and a forced,
+validated extraction function. Inventory reads actual Appwrite rows; Sales
+calculates prices deterministically. Models cannot approve quotes or change stock.
+OpenAI and Anthropic adapters remain available.
+
+The operator check reads only `SEED_OWNER_USER_ID`'s catalog and invokes the same
+Support Agent function as the workflow. It reports `LLM` or `fallback` and safe
+HTTP failure codes; fallback exits with code 1. No database records are written.
+It can use a local setup key for this operator check; deployed requests always
+use runtime credentials and authenticated owner authorization. This check does
+not replace an authenticated HTTP workflow smoke test. Never deploy the setup key.
 
 Run `npm run check:backend`, `npm run test:backend`, and `npm run build`. Automated
 tests use the real installed SDK against an isolated HTTP fixture; live Cloud

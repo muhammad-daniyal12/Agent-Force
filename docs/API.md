@@ -151,3 +151,12 @@ against an isolated HTTP fixture and checks all business endpoints, auth,
 cross-owner denial, transactions, stock rollback, repeated approval, fallback,
 provider tool formats, and timeout behavior. This is not a live Appwrite Cloud
 test. Real Cloud setup, seed, and deployed smoke tests require private credentials.
+
+
+## Backend-v2 pricing change (pending integration verification)
+
+The quotation agent now uses Pakistan-rupee **demo** pricing: discounts are 0% up to PKR 150,000, 5% when subtotal is above PKR 150,000 and at most PKR 500,000, and 10% above PKR 500,000. Discounts, demo tax and totals round to whole rupees. The default `TAX_RATE` is now `0.18` if unset, and remains configurable. This is a demo configuration, **not legal GST advice**. Existing deployed `TAX_RATE` values override the new default, so production environment variables must be reviewed separately.
+
+No endpoint or DTO shape has changed in this pricing-only increment. New account settings, dealer, restock, follow-up, public quote, and bulk import endpoints described in the backend-v2 request **are not yet implemented**. The changed seed script only adds missing SKUs; it deliberately does not overwrite products already seeded at old prices. Review and migrate existing demo catalog prices explicitly before using the PKR example in a live demonstration.
+
+Example expected numbers for a demonstration quotation: 10 Wireless Mouse @ Rs 2,499 + 10 Mechanical Keyboard @ Rs 12,999 + 5 USB-C Hub @ Rs 6,499 gives Rs 187,475 subtotal, Rs 9,374 volume discount, Rs 32,058 demo tax, Rs 210,159 total.

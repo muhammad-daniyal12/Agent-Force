@@ -9,6 +9,7 @@ import { cn, formatCurrency, timeAgo } from "@/lib/utils";
 import type { Product } from "@/types";
 import { Badge, Button, Card, EmptyState, ErrorState, Field, Input, PageHeader, Skeleton } from "@/components/ui";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
+import { RestockPanel } from "@/components/restock-panel";
 
 type Filter = "all" | "low" | "out";
 
@@ -57,6 +58,9 @@ export default function InventoryPage() {
           </Button>
         }
       />
+
+      {/* Only on the unfiltered catalog, so suggestions cover every product. */}
+      {!debounced && products && <RestockPanel products={products} />}
 
       <Card>
         <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">

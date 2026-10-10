@@ -118,6 +118,7 @@ export const mock = {
         items: extracted.map((e) => ({ productQuery: e.query, quantity: e.quantity })),
         urgency: /\b(urgent|asap|today|this week)\b/i.test(input.request) ? "high" : "normal",
         sentiment: "neutral",
+        confidence: isPurchase && extracted.length > 0 ? 0.9 + Math.random() * 0.07 : 0.82 + Math.random() * 0.08,
       },
       durationMs: 820 + Math.round(Math.random() * 400),
     });
@@ -149,13 +150,23 @@ export const mock = {
       status: "done",
       tool: "checkStock",
       input: extracted.map((e) => e.query),
-      output: extracted.map(({ product, quantity }) => ({
-        sku: product.sku,
-        name: product.name,
-        requested: quantity,
-        available: product.stock,
-        inStock: product.stock >= quantity,
-      })),
+      output: {
+        results: extracted.map(({ product, quantity }) => ({
+          sku: product.sku,
+          name: product.name,
+          requested: quantity,
+          available: product.stock,
+          inStock: product.stock >= quantity,
+        })),
+        suggestions: extracted
+          .filter(({ product, quantity }) => product.stock < quantity)
+          .map(({ product, quantity }) =>
+            product.stock > 0
+              ? `Offer partial delivery for ${product.name}: ${product.stock} now, ${quantity - product.stock} within 5 working days.`
+              : `${product.name} is out of stock. Quote with a 5–7 day delivery estimate and restock ${Math.max(quantity, product.lowStockThreshold * 3)} units.`,
+          ),
+        confidence: 0.97 + Math.random() * 0.02,
+      },
       durationMs: 410 + Math.round(Math.random() * 300),
     });
     log("Inventory Agent", "checked stock for", items.map((i) => i.name).join(", "));
@@ -182,7 +193,7 @@ export const mock = {
       status: "done",
       tool: "createQuotation",
       input: { items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })) },
-      output: { quotationId: quotation.id, subtotal, discountRate, discount, tax, taxLabel: "GST 18%", total, status: "pending" },
+      output: { quotationId: quotation.id, subtotal, discountRate, discount, tax, taxLabel: "GST 18%", total, status: "pending", confidence: 0.99 },
       durationMs: 690 + Math.round(Math.random() * 300),
     });
     log("Sales Agent", "created quotation", `QUO-${quotation.id.slice(-6).toUpperCase()} · ${input.customerName}`);

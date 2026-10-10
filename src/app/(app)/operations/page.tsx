@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  Lightbulb,
   Loader2,
   MessageSquareText,
   Play,
@@ -419,8 +420,10 @@ function StepRow({ step, last }: { step: AgentStep; last: boolean }) {
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <p className={cn("text-[11px] font-semibold uppercase tracking-wider", meta.text)}>{meta.label} agent</p>
           <span className="tabular text-[11px] text-subtle">{(step.durationMs / 1000).toFixed(1)}s</span>
+          <ConfidenceBadge output={step.output} />
         </div>
         <p className="mt-0.5 text-sm font-medium text-fg">{step.title}</p>
+        <Suggestions output={step.output} />
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -437,6 +440,34 @@ function StepRow({ step, last }: { step: AgentStep; last: boolean }) {
 }
 
 type Row = Record<string, unknown>;
+
+/** Agents report confidence (0–1) inside their tool output; show it when present. */
+function ConfidenceBadge({ output }: { output: unknown }) {
+  const c = output && typeof output === "object" && "confidence" in output ? Number((output as Row).confidence) : NaN;
+  if (!Number.isFinite(c)) return null;
+  const pct = Math.round(c * 100);
+  return (
+    <Badge tone={pct >= 90 ? "success" : pct >= 75 ? "warning" : "danger"} className="tabular">
+      {pct}% confident
+    </Badge>
+  );
+}
+
+/** Inventory Agent recommendations, shown inline so they're visible without opening details. */
+function Suggestions({ output }: { output: unknown }) {
+  const list = output && typeof output === "object" && Array.isArray((output as Row).suggestions) ? ((output as Row).suggestions as string[]) : [];
+  if (list.length === 0) return null;
+  return (
+    <ul className="mt-2 space-y-1.5">
+      {list.map((s) => (
+        <li key={s} className="flex items-start gap-2 rounded-lg bg-inventory-soft px-3 py-2 text-[13px] text-fg">
+          <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-inventory" aria-hidden />
+          {s}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /** Renders known tool outputs as readable UI; anything else falls back to JSON. */
 function ToolOutput({ step }: { step: AgentStep }) {
@@ -464,8 +495,9 @@ function ToolOutput({ step }: { step: AgentStep }) {
     );
   }
 
-  if (Array.isArray(out) && out.length > 0 && typeof out[0] === "object" && out[0] && "available" in (out[0] as Row)) {
-    const rows = out as { sku?: string; name: string; requested: number; available: number; inStock: boolean }[];
+  const stockRows = Array.isArray(out) ? out : out && typeof out === "object" && Array.isArray((out as Row).results) ? ((out as Row).results as unknown[]) : null;
+  if (stockRows && stockRows.length > 0 && typeof stockRows[0] === "object" && stockRows[0] && "available" in (stockRows[0] as Row)) {
+    const rows = stockRows as { sku?: string; name: string; requested: number; available: number; inStock: boolean }[];
     return (
       <div className="-mx-3 -my-3 overflow-x-auto">
         <table className="w-full text-[13px]">

@@ -102,3 +102,14 @@ export const mockActivity: ActivityLog[] = [
   { id: "act_6", actor: "Admin", action: "approved quotation", target: "QUO-5A02D4 · Ayesha Malik", createdAt: ago(180) },
   { id: "act_7", actor: "Admin", action: "rejected quotation", target: "QUO-3E77F0 · Bilal Ahmed", createdAt: ago(310) },
 ];
+
+/** Quotation volume for the last 7 days (dashboard chart in demo mode). */
+export const mockWeeklyVolume = [
+  { day: "Mon", quotations: 6, approved: 4 },
+  { day: "Tue", quotations: 9, approved: 7 },
+  { day: "Wed", quotations: 7, approved: 5 },
+  { day: "Thu", quotations: 12, approved: 9 },
+  { day: "Fri", quotations: 10, approved: 8 },
+  { day: "Sat", quotations: 5, approved: 4 },
+  { day: "Sun", quotations: 8, approved: 5 },
+];

@@ -9,6 +9,7 @@ export type Column = {
     | "enum"
     | "datetime";
   required: boolean;
+  array?: boolean;
   size?: number;
   min?: number;
   max?: number;
@@ -47,7 +48,7 @@ const history: Index = {
 };
 
 export const businessSchema: {
-  configKey: "products" | "quotations" | "runs" | "activity" | "rateLimits" | "settings";
+  configKey: "products" | "quotations" | "runs" | "activity" | "rateLimits" | "settings" | "dealers" | "restockOrders";
   columns: Column[];
   indexes: Index[];
 }[] = [
@@ -145,6 +146,33 @@ export const businessSchema: {
       text("city", 80),
       text("phone", 20),
       text("email", 254),
+    ],
+    indexes: [history],
+  },
+  {
+    configKey: "dealers",
+    columns: [
+      owner,
+      text("name", 120),
+      text("phone", 20),
+      text("email", 254),
+      { key: "categories", type: "varchar", size: 100, array: true, required: true },
+    ],
+    indexes: [history],
+  },
+  {
+    configKey: "restockOrders",
+    columns: [
+      owner,
+      text("dealerId", 36),
+      { key: "itemsJson", type: "text", required: true },
+      {
+        key: "status",
+        type: "enum",
+        elements: ["draft", "sent"],
+        required: true,
+      },
+      { key: "sentAt", type: "datetime", required: false },
     ],
     indexes: [history],
   },

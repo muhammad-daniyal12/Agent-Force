@@ -3,7 +3,7 @@ import { AppwriteException, ID, Models, Query, TablesDB } from "node-appwrite";
 import { getConfig } from "../appwrite/config";
 import { ApiError } from "./errors";
 
-export type Table = "products" | "quotations" | "runs" | "activity" | "settings";
+export type Table = "products" | "quotations" | "runs" | "activity" | "settings" | "dealers" | "restockOrders";
 export type BusinessRow = Models.Row &
   Record<string, unknown> & { owner_user_id: string };
 

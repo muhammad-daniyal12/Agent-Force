@@ -18,6 +18,8 @@ export function getConfig() {
       activity: id,
       rateLimits: id,
       settings: id,
+      dealers: id,
+      restockOrders: id,
       origin: z.url(),
     })
     .safeParse({
@@ -34,6 +36,8 @@ export function getConfig() {
       activity: pick("APPWRITE_ACTIVITY_TABLE_ID") || "activity_logs",
       rateLimits: pick("APPWRITE_RATE_LIMITS_TABLE_ID") || "rate_limits",
       settings: pick("APPWRITE_SETTINGS_TABLE_ID") || "business_settings",
+      dealers: pick("APPWRITE_DEALERS_TABLE_ID") || "dealers",
+      restockOrders: pick("APPWRITE_RESTOCK_ORDERS_TABLE_ID") || "restock_orders",
       origin: process.env.APP_ORIGIN,
     });
   if (!parsed.success)

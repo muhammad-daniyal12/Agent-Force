@@ -88,6 +88,46 @@ async function main() {
       throw error;
     }
   }
+
+  // Seed two illustrative suppliers only when missing, without replacing
+  // owner-created dealers or changing existing catalog/stock data.
+  const dealers = [
+    {
+      name: "Ali Traders",
+      phone: "03001112233",
+      email: "orders@alitraders.pk",
+      categories: ["Mice", "Keyboards", "Hubs", "Cables", "Accessories"],
+    },
+    {
+      name: "Hafeez Centre Wholesale",
+      phone: "03214445566",
+      email: "sales@hafeezwholesale.pk",
+      categories: ["Monitors", "Audio", "Webcams"],
+    },
+  ];
+  let dealersAdded = 0;
+  for (const dealer of dealers) {
+    const existing = await db.listRows({
+      databaseId: config.databaseId,
+      tableId: config.dealers,
+      queries: [
+        Query.equal("owner_user_id", ownerId),
+        Query.limit(100),
+      ],
+      total: false,
+      ttl: 0,
+    });
+    if (existing.rows.some((row) => row.name === dealer.name)) continue;
+    await db.createRow({
+      databaseId: config.databaseId,
+      tableId: config.dealers,
+      rowId: ID.unique(),
+      data: { ...dealer, owner_user_id: ownerId },
+      permissions: [],
+    });
+    dealersAdded++;
+  }
+  console.log("Dealers seed: " + dealersAdded + " added, " + (dealers.length - dealersAdded) + " already existed.");
   console.log(
     `Seed complete: ${added} added, ${products.length - added} already existed. Existing inventory preserved.`,
   );

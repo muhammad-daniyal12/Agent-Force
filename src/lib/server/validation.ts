@@ -35,10 +35,27 @@ export const productPatch = productInput
     (value) => Object.keys(value).length > 0,
     "Provide at least one editable field.",
   );
+// Persist a consistent phone number representation across browser sessions.
+// Accept common phone separators, but never accept text/extensions as a number.
+// Empty means the optional contact number was not supplied.
+export const customerPhoneInput = z
+  .string()
+  .trim()
+  .max(40)
+  .refine(
+    (value) =>
+      value === "" ||
+      (/^\+?[0-9\s().-]+$/.test(value) &&
+        /^\d{10,15}$/.test(value.replace(/\D/g, ""))),
+    "Phone must contain 10 to 15 digits (optional spaces, +, dots, hyphens or parentheses).",
+  )
+  .transform((value) => value ? value.replace(/\D/g, "") : undefined);
+
 export const operationInput = z
   .object({
     customerName: z.string().trim().min(1).max(120),
     customerEmail: z.email().max(254),
+    customerPhone: customerPhoneInput.optional(),
     request: z.string().trim().min(1).max(2000),
   })
   .strict();

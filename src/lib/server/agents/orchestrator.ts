@@ -164,6 +164,7 @@ export async function runOperation(
           {
             customerName: input.customerName,
             customerEmail: input.customerEmail,
+            ...(input.customerPhone ? { customerPhone: input.customerPhone } : {}),
             request: input.request,
             itemsJson: JSON.stringify(quoteData.items),
             subtotal: quoteData.subtotal,

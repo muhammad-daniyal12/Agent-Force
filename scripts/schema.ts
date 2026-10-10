@@ -9,6 +9,7 @@ export type Column = {
     | "enum"
     | "datetime";
   required: boolean;
+  array?: boolean;
   size?: number;
   min?: number;
   max?: number;
@@ -47,7 +48,7 @@ const history: Index = {
 };
 
 export const businessSchema: {
-  configKey: "products" | "quotations" | "runs" | "activity" | "rateLimits";
+  configKey: "products" | "quotations" | "runs" | "activity" | "rateLimits" | "settings" | "dealers" | "restockOrders";
   columns: Column[];
   indexes: Index[];
 }[] = [
@@ -79,6 +80,7 @@ export const businessSchema: {
       owner,
       text("customerName", 120),
       text("customerEmail", 254),
+      text("customerPhone", 20, false),
       { key: "request", type: "text", required: true },
       { key: "itemsJson", type: "text", required: true },
       money("subtotal"),
@@ -94,10 +96,15 @@ export const businessSchema: {
       text("reviewerNote", 1000, false),
       text("reviewer_user_id", 36, false),
       { key: "reviewed_at", type: "datetime", required: false },
+      { key: "followedUpAt", type: "datetime", required: false },
+      text("shareToken", 96, false),
+      { key: "customerResponse", type: "enum", elements: ["accepted"], required: false },
+      { key: "respondedAt", type: "datetime", required: false },
       { key: "demo_tax_rate", type: "float", min: 0, max: 1, required: true },
     ],
     indexes: [
       history,
+      { key: "quotation_share_token", type: "unique", columns: ["shareToken"] },
       {
         key: "owner_status_created",
         type: "key",
@@ -133,6 +140,44 @@ export const businessSchema: {
       text("actor", 64),
       text("action", 200),
       text("target", 200),
+    ],
+    indexes: [history],
+  },
+  {
+    configKey: "settings",
+    columns: [
+      owner,
+      text("name", 120),
+      text("city", 80),
+      text("phone", 20),
+      text("email", 254),
+    ],
+    indexes: [history],
+  },
+  {
+    configKey: "dealers",
+    columns: [
+      owner,
+      text("name", 120),
+      text("phone", 20),
+      text("email", 254),
+      { key: "categories", type: "varchar", size: 100, array: true, required: false },
+    ],
+    indexes: [history],
+  },
+  {
+    configKey: "restockOrders",
+    columns: [
+      owner,
+      text("dealerId", 36),
+      { key: "itemsJson", type: "text", required: true },
+      {
+        key: "status",
+        type: "enum",
+        elements: ["draft", "sent"],
+        required: true,
+      },
+      { key: "sentAt", type: "datetime", required: false },
     ],
     indexes: [history],
   },

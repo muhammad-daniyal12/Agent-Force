@@ -23,11 +23,15 @@ export function createQuotation(
     (sum, line) => sum + Math.round(line.total * 100),
     0,
   );
+  // UI displays PKR amounts in whole rupees. Apply volume thresholds to
+  // major currency units, not the cent-based storage arithmetic above.
+  const subtotalRupees = Math.round(subtotal / 100);
   const discount = Math.round(
-    subtotal * (subtotal > 200000 ? 0.1 : subtotal > 50000 ? 0.05 : 0),
+    subtotalRupees *
+      (subtotalRupees > 500_000 ? 0.1 : subtotalRupees > 150_000 ? 0.05 : 0),
   );
-  const tax = Math.round((subtotal - discount) * taxRate);
-  const total = subtotal - discount + tax;
+  const tax = Math.round((subtotalRupees - discount) * taxRate);
+  const total = subtotalRupees - discount + tax;
   if (
     ![subtotal, discount, tax, total].every(Number.isSafeInteger) ||
     total > 100000000000000
@@ -35,9 +39,9 @@ export function createQuotation(
     throw new ApiError(422, "Requested amount is too large.");
   return {
     items: lines,
-    subtotal: subtotal / 100,
-    discount: discount / 100,
-    tax: tax / 100,
-    total: total / 100,
+    subtotal: subtotalRupees,
+    discount,
+    tax,
+    total,
   };
 }

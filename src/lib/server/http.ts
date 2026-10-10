@@ -82,7 +82,7 @@ export async function respond(
 
 export function withOwner<T>(
   request: Request,
-  work: (store: BusinessStore) => Promise<T>,
+  work: (store: BusinessStore, owner: Awaited<ReturnType<typeof requireOwner>>) => Promise<T>,
   status = 200,
 ): Promise<Response> {
   return respond(async () => {
@@ -90,7 +90,7 @@ export function withOwner<T>(
     if (!["GET", "HEAD"].includes(request.method)) checkOrigin(request);
     const db = serverTables(request);
     await rateLimit(db, `${owner.$id}:api`, 120);
-    return json(await work(new BusinessStore(db, owner.$id)), status);
+    return json(await work(new BusinessStore(db, owner.$id), owner), status);
   });
 }
 

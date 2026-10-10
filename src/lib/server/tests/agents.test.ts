@@ -59,21 +59,23 @@ test("fallback does not silently clamp invalid quantities or turn refunds into p
   );
 });
 
-test("demo discounts use strict thresholds, checked money and discounted tax base", () => {
+test("PKR discount thresholds and whole-rupee rounding", () => {
   const quote = (subtotal: number) =>
-    createQuotation(
-      [{ product: { ...mouse, price: subtotal }, quantity: 1 }],
-      0.08,
-    );
-  assert.equal(quote(500).discount, 0);
-  assert.equal(quote(500.01).discount, 25);
-  assert.equal(quote(2000).discount, 100);
-  assert.equal(quote(2000.01).discount, 200);
-  const pennies = createQuotation(
-    [{ product: { ...mouse, price: 0.1 }, quantity: 3 }],
-    0.08,
+    createQuotation([{ product: { ...mouse, price: subtotal }, quantity: 1 }], 0.18);
+  assert.equal(quote(150_000).discount, 0);
+  assert.equal(quote(150_001).discount, 7_500);
+  assert.equal(quote(500_000).discount, 25_000);
+  assert.equal(quote(500_001).discount, 50_000);
+  const example = createQuotation(
+    [
+      { product: { ...mouse, price: 2_499 }, quantity: 10 },
+      { product: { ...hub, price: 12_999 }, quantity: 10 },
+      { product: { ...hub, id: "other", price: 6_499 }, quantity: 5 },
+    ],
+    0.18,
   );
-  assert.equal(pennies.subtotal, 0.3);
-  assert.equal(pennies.tax, 0.02);
-  assert.equal(pennies.total, 0.32);
+  assert.equal(example.subtotal, 187_475);
+  assert.equal(example.discount, 9_374);
+  assert.equal(example.tax, 32_058);
+  assert.equal(example.total, 210_159);
 });

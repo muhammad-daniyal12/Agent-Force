@@ -31,6 +31,7 @@ export interface Quotation {
   id: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   request: string;
   items: QuotationItem[];
   subtotal: number;
@@ -39,6 +40,10 @@ export interface Quotation {
   total: number;
   status: "pending" | "approved" | "rejected";
   reviewerNote?: string;
+  followedUpAt?: string;
+  shareToken?: string;
+  customerResponse?: "accepted" | null;
+  respondedAt?: string;
   createdAt: string;
 }
 export interface AgentStep {

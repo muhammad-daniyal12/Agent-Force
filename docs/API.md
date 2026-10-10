@@ -151,3 +151,131 @@ against an isolated HTTP fixture and checks all business endpoints, auth,
 cross-owner denial, transactions, stock rollback, repeated approval, fallback,
 provider tool formats, and timeout behavior. This is not a live Appwrite Cloud
 test. Real Cloud setup, seed, and deployed smoke tests require private credentials.
+
+
+## Backend-v2 pricing change (pending integration verification)
+
+The quotation agent now uses Pakistan-rupee **demo** pricing: discounts are 0% up to PKR 150,000, 5% when subtotal is above PKR 150,000 and at most PKR 500,000, and 10% above PKR 500,000. Discounts, demo tax and totals round to whole rupees. The default `TAX_RATE` is now `0.18` if unset, and remains configurable. This is a demo configuration, **not legal GST advice**. Existing deployed `TAX_RATE` values override the new default, so production environment variables must be reviewed separately.
+
+No endpoint or DTO shape has changed in this pricing-only increment. New account settings, dealer, restock, follow-up, public quote, and bulk import endpoints described in the backend-v2 request **are not yet implemented**. The changed seed script only adds missing SKUs; it deliberately does not overwrite products already seeded at old prices. Review and migrate existing demo catalog prices explicitly before using the PKR example in a live demonstration.
+
+Example expected numbers for a demonstration quotation: 10 Wireless Mouse @ Rs 2,499 + 10 Mechanical Keyboard @ Rs 12,999 + 5 USB-C Hub @ Rs 6,499 gives Rs 187,475 subtotal, Rs 9,374 volume discount, Rs 32,058 demo tax, Rs 210,159 total.
+
+## Business settings (backend-v2)
+
+Settings are owner scoped and stored in the server-only `business_settings` table (one row per owner). Session, Origin validation on writes, rate limits, 32 KiB JSON size limit, and Zod validation use the existing business API infrastructure.
+
+| Method | Endpoint | Body | Response |
+| --- | --- | --- | --- |
+| GET | `/api/settings` | None | `{ name, city, phone, email }` |
+| PUT | `/api/settings` | `{ name, city?, phone?, email? }` | `{ name, city, phone, email }` |
+
+When no settings row exists, GET returns the authenticated account name (or "My Business" when blank) and empty strings for other fields. PUT replaces the business profile; omitted optional fields become empty strings. Name must be 1-120 characters; city up to 80, phone up to 20 with 10-15 numeric digits after removing spaces/leading +, and email must be blank or valid (up to 254). Rows are owned by the authenticated account and receive no client grants. PUT writes an activity audit entry. No client-supplied owner ID is accepted.
+
+Authenticated PowerShell example using the previously documented `$base`, `$cookieJar`, and `Write-Body` helper:
+
+```powershell
+curl.exe --fail-with-body -b $cookieJar "$base/api/settings"
+Write-Body @{ name = "Nova Tech Supplies"; city = "Lahore"; phone = "+92 300 1234567"; email = "sales@example.pk" }
+curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" -X PUT "$base/api/settings"
+```
+
+The frontend's existing browser-local `src/lib/business.ts` profile is **not yet connected** to this API and must be migrated separately by the frontend engineer.
+
+## Customer WhatsApp number on quotations (backend-v2)
+
+`POST /api/operations/run` optionally accepts `customerPhone` as well as the existing fields. Accepted input is a string containing **10–15 digits** with optional leading `+`, spaces, dots, parentheses or hyphens. The backend strips formatting characters and stores only digits (e.g. `+92 300 1234567` becomes `923001234567`); an absent or blank number is omitted. Invalid input returns 422. The number belongs to the authenticated owner's quotation, not to a global customer database.
+
+The optional `Quotation.customerPhone?: string` appears in the `OperationRun.quotation`, quotation list/get results, and approved/rejected quotation responses when present. Existing quotations and requests without the number retain their **original response shape**. Owner scoping, session, Origin validation on POST, input limits, and idempotency protection are unchanged; idempotency compares normalized phone digits.
+
+Authenticated PowerShell example (with the `Write-Body` and `$cookieJar` helpers above):
+
+```powershell
+Write-Body @{ customerName = "Ali"; customerEmail = "ali@example.com"; customerPhone = "+92 300 1234567"; request = "I need 10 wireless mice and 5 USB-C hubs" }
+curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" "$base/api/operations/run"
+```
+
+**Provisioning:** `scripts/schema.ts` now declares an **optional** `customerPhone varchar(20)` column on the `quotations` table. Before deploying this branch or sending `customerPhone` in production, provision the new column with `npm run setup:appwrite` using the private setup key. The legacy browser-only phone store is not yet wired to this API and must be switched separately by the frontend engineer.
+
+
+## Dealers and restock orders (backend-v2)
+
+All routes require an authenticated owner session and return bare JSON DTOs. Create/update/delete/mark-sent enforce the existing exact Origin check and 32 KiB JSON request size limit. Owner IDs and direct permissions are never accepted from clients. Dealers and orders are in private TablesDB tables with empty grants; creation/edit/deletion and order marking produce audit logs.
+
+| Method | Route | Request | Response |
+| --- | --- | --- | --- |
+| GET | `/api/dealers` | None | `Dealer[]`, 200 |
+| POST | `/api/dealers` | `{ name, phone, email?, categories? }` | `Dealer`, 201 |
+| PATCH | `/api/dealers/:id` | Non-empty subset of editable dealer fields | `Dealer`, 200 |
+| DELETE | `/api/dealers/:id` | None | `{ ok: true }`, 200 |
+| POST | `/api/restock-orders/mark-sent` | `{ dealerId, productIds: string[] }` | `{ ok: true }`, 200 |
+| GET | `/api/restock-orders?status=sent&since=ISO` | Optional `status=draft|sent` and ISO 8601 `since` | `RestockOrder[]`, 200 |
+
+`Dealer` shape: `{ id, name, phone, email, categories, createdAt, updatedAt }`. The phone field is 10–15 digits (formatting stripped), email defaults to `""`, and categories defaults to `[]` (supplies all categories). Categories support at most 20 unique, nonempty strings of 100 characters maximum. Names are 1–120 characters. Bad values and unknown write fields return HTTP 422; cross-owner record access returns 404.
+
+`RestockOrder` shape: `{ id, dealerId, items: [{ productId, quantity }], status, sentAt?, createdAt }`. Currently only `sent` orders are created by the server; `draft` is reserved for possible future support. `mark-sent` records the owner's **manual confirmation** that a supplier order was sent; the server DOES NOT send WhatsApp messages or emails. Each of the 1–50 unique product IDs must belong to the signed-in owner and have `stock <= lowStockThreshold`. Quantities are calculated from current stock as `max(5, ceil((lowStockThreshold * 4 - stock) / 5) * 5)`. This stores intent only; product inventory is not increased or deducted. The entire operation and audit are transactional. The `since` filter applies to `sentAt`, inclusive, and supports the UI's 3-day recently ordered suppression.
+
+Authenticated PowerShell examples (using `$base`, `$cookieJar`, `$bodyFile`, and `Write-Body` as documented above):
+
+```powershell
+Write-Body @{ name = "Ali Traders"; phone = "0300 1112233"; email = "orders@alitraders.pk"; categories = @("Mice", "Cables") }
+$dealer = curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" "$base/api/dealers" | ConvertFrom-Json
+curl.exe --fail-with-body -b $cookieJar "$base/api/dealers"
+Write-Body @{ dealerId = $dealer.id; productIds = @("<actual-low-stock-product-id>") }
+curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" "$base/api/restock-orders/mark-sent"
+curl.exe --fail-with-body -b $cookieJar "$base/api/restock-orders?status=sent"
+```
+
+Provision `dealers` and `restock_orders` via `npm run setup:appwrite` with the private provisioning key before deploying this branch, then run `npm run check:appwrite`. The new backend API **is not yet wired into** the browser-based `src/lib/dealers.ts` and restock-panel UI; a separate frontend integration is required. The seed script adds two example dealers without replacing previously saved dealers, and existing browser-local dealers are not automatically migrated.
+
+
+## Customer follow-up status (backend-v2)
+
+| Method | Endpoint | Request | Response |
+| --- | --- | --- | --- |
+| POST | `/api/quotations/:id/follow-up` | No JSON body required | Bare `Quotation`, 200 |
+
+The authenticated owner records that a **manual** follow-up was completed. On first success the server sets `followedUpAt` (ISO timestamp) on the quotation and creates an activity log: `Admin followed up with <customer>`. Additional calls leave the original timestamp intact without duplicate audit entries. No WhatsApp, SMS or email is sent by this endpoint.
+
+The response, as well as existing quotation list/get/approve/reject endpoints, conditionally include `Quotation.followedUpAt?: string`; old rows without a follow-up preserve their existing DTO shape. Requests without sessions return 401, cross-owner IDs 404, invalid resource IDs 422, and wrong Origin 403. Existing request rate limits apply.
+
+PowerShell `curl.exe` example using the signed-in cookie jar and exact `$base` URL:
+
+```powershell
+curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" -X POST "$base/api/quotations/QUOTATION_ID/follow-up"
+```
+
+The required Appwrite schema migration is an **optional** `followedUpAt datetime` column in the `quotations` table, added via private `npm run setup:appwrite`. Frontend `Mark as done` still stores browser-local marks; the frontend engineer must connect it to this endpoint before cross-device follow-up status appears in the UI.
+
+
+## Public quotation share links + customer acceptance (backend-v2)
+
+When a signed-in owner **approves** a pending quotation, the server atomically stores a new, cryptographically random 64-character URL-safe share token in the same Appwrite transaction as the approval, stock deduction, and audit record. This token is a bearer capability: anyone who receives the link can view the restricted quote and accept it; do not post it publicly. No token is created for pending or rejected quotations. Already-approved legacy records are not automatically issued a token.
+
+Additional optional owner-facing `Quotation` fields:
+- `shareToken?: string` (present after new approval)
+- `customerResponse?: "accepted" | null` (null after approval, accepted after confirmation)
+- `respondedAt?: string` (ISO timestamp set on acceptance)
+
+| Method | Endpoint | Auth | Response |
+| --- | --- | --- | --- |
+| GET | `/api/public/quotes/:token` | No login | `{ businessName, businessCity, businessPhone, quotationNumber, customerName, items, subtotal, discount, tax, total, status, customerResponse, createdAt }` |
+| POST | `/api/public/quotes/:token/accept` | No login; exact `APP_ORIGIN` header required | `{ customerResponse: "accepted", respondedAt }` |
+
+The **public GET projection** deliberately returns only item `{ name, quantity, unitPrice, total }` fields and the fields in the table. It never returns owner IDs, customer/owner email addresses, customer phone numbers, product IDs, shareToken, reviewer notes, internal requests, or private activity. Invalid/missing token returns 404; unapproved quotes are not publicly viewable (404) and cannot be accepted (409). Both routes return noncacheable JSON with `Referrer-Policy: no-referrer` and `X-Robots-Tag: noindex, nofollow`.
+
+The first successful acceptance atomically records `customerResponse="accepted"`, `respondedAt`, and an activity entry `Customer accepted QUO-XXXXXX`. Repeated acceptance leaves the original timestamp and audit unchanged. No new stock change, payment, WhatsApp message, or email is triggered by acceptance.
+
+Example using an actual approved quotation share token:
+
+```powershell
+$token = "PASTE_REAL_SHARE_TOKEN_HERE"
+curl.exe --fail-with-body "$base/api/public/quotes/$token"
+curl.exe --fail-with-body -H "Origin: $base" -X POST "$base/api/public/quotes/$token/accept"
+```
+
+The application will need a separate frontend `/q/[token]` page that calls these routes; this backend-only PR does **not** add that page. Use `$base = APP_ORIGIN`, no login cookie is required for the public routes. Do not use a manually fabricated token in production.
+
+**Rate limits:** Independent per-minute persistent TablesDB buckets limit all public requests globally (GET 500, POST 120), by IP (GET 80, POST 20), and by token (GET 30, POST 8). Tokens are hashed in the rate-bucket identity. Client IP must come from a **trusted proxy**: the setting `TRUST_PROXY_IP_HEADERS=true` enables `X-Real-IP` or the first `X-Forwarded-For` entry **only after** confirming the deployment edge strips all incoming client-supplied IP headers and writes its own. The default is conservative: unverified clients share one `unknown-ip` budget. The token cap and global cap still apply. Validate the deployment proxy/IP behavior before enabling trusted IP parsing. Untrusted header values must never be considered authoritative.
+
+**Provisioning:** Add optional `shareToken varchar(96)` with a **unique index**, optional `customerResponse enum(accepted)`, and optional `respondedAt datetime` on `quotations` via the private setup script. This maintains compatibility with existing rows. Do not deploy before the schema and index are available, especially if the Site serves public traffic.

@@ -23,7 +23,7 @@ async function createColumn(
     tableId,
     key: column.key,
     required: column.required,
-    array: false,
+    array: column.array ?? false,
   };
   switch (column.type) {
     case "varchar":
@@ -102,7 +102,7 @@ async function main() {
         if (
           old.type !== column.type ||
           old.required !== column.required ||
-          old.array ||
+          (old.array ?? false) !== (column.array ?? false) ||
           (column.size && details.size !== column.size) ||
           (column.elements &&
             JSON.stringify(details.elements) !==

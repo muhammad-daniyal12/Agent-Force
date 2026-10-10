@@ -39,6 +39,9 @@ async function main() {
     config.runs,
     config.activity,
     config.rateLimits,
+    config.settings,
+    config.dealers,
+    config.restockOrders,
   ]) {
     await db.listRows({
       databaseId: config.databaseId,

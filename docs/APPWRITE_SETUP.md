@@ -192,3 +192,39 @@ HTTP-only session flow, use relative API URLs, send editable fields only, handle
 JSON error strings and 409 refreshes, and display demo tax settings as demo.
 QA/deployment handoff: provision the current schema, preserve owner isolation,
 set SSR/scopes/origin/timeout, and smoke-test the actual Appwrite region.
+
+## Backend-v2 business settings provisioning
+
+The new `business_settings` table is provisioned by `npm run setup:appwrite` using the existing private provisioning key. Its table ID defaults to `business_settings` and may be overridden with `APPWRITE_SETTINGS_TABLE_ID` locally or `AGENTFORCE_APPWRITE_SETTINGS_TABLE_ID` on Appwrite Sites. Columns: required `owner_user_id varchar(36)`, `name varchar(120)`, `city varchar(80)`, `phone varchar(20)`, and `email varchar(254)`; index: `owner_created`. The authenticated backend writes empty strings when optional settings are absent. As with other business tables, use Row Security with empty table/row permissions; server API keys still require explicit owner validation.
+
+The new runtime settings API uses the existing `rows.read` and `rows.write` scopes. **Before deploying this branch**, rerun private setup to create the new table and then `npm run check:appwrite` to verify six tables; otherwise `/api/settings` will be unavailable. Schema-admin keys must not be deployed.
+
+## Backend-v2 quotation contact migration
+
+Add the optional `customerPhone varchar(20)` column to the existing `quotations` table via `npm run setup:appwrite` using a private provisioning key. This is backward compatible: existing quote rows do not require a phone value. Only the authenticated backend can return quotation phone numbers to the owner; all table/row grants must remain empty. Do not run the updated server with phone-bearing quotation requests until the optional column is available. Do not grant admin/schema scopes to the deployed Appwrite Site.
+
+
+## Backend-v2 dealers and restock orders
+
+The additive provisioning script creates two new server-only tables (Row Security on, no grants) and leaves old business data unchanged:
+
+- `dealers`: `owner_user_id varchar(36)` required, `name varchar(120)` required, `phone varchar(20)` required, `email varchar(254)` required, and optional `categories varchar(100)[]` for categories including the empty array. Index `owner_created`.
+- `restock_orders`: `owner_user_id varchar(36)`, `dealerId varchar(36)`, `itemsJson text`, and `status enum(draft,sent)` required; `sentAt datetime` optional. Index `owner_created`.
+
+Defaults: `APPWRITE_DEALERS_TABLE_ID=dealers`, `APPWRITE_RESTOCK_ORDERS_TABLE_ID=restock_orders`. On Appwrite Sites use the corresponding `AGENTFORCE_APPWRITE_*` aliases if overriding defaults. The runtime retains only `rows.read`, `rows.write`, `sessions.write` scopes; do not deploy setup keys.
+
+Before deploying new endpoints, rerun `npm run setup:appwrite` privately to create the two tables and optional quotation phone column, then `npm run check:appwrite` to verify all **eight** runtime-accessed tables. After schema setup, `npm run seed` adds two illustrative dealers for `SEED_OWNER_USER_ID` by name without replacing existing dealer records or products. Repeated seeding intentionally preserves manually edited stock and prices. Verify the dealer/category matching in the frontend before demoing; the client still uses browser-only dealer data until separately wired to these server endpoints.
+
+
+## Backend-v2 follow-up timestamp migration
+
+Before enabling the new POST `/api/quotations/:id/follow-up` endpoint, privately run `npm run setup:appwrite` to add the optional `quotations.followedUpAt` datetime column, then `npm run check:appwrite`. The column is optional, so previously stored quotations remain valid. All updates use the signed-in owner's scope and the server-only TablesDB client; no table/row grants or runtime administrative scopes are needed. The endpoint only stores a manual follow-up marker; it does not contact customers.
+
+
+## Backend-v2 public quotation capabilities
+
+Before enabling public quote routes, run `npm run setup:appwrite` privately to add these optional fields to the existing `quotations` table: `shareToken varchar(96)`, `customerResponse enum(accepted)`, `respondedAt datetime`. Add the globally unique `quotation_share_token` index on `shareToken`, which prevents accidental bearer-token collisions. Older pending, rejected, and approved quotations are preserved without tokens. After provisioning, run `npm run check:appwrite` and confirm unique-index availability before deploying.
+
+Do not expose server keys in public client code. The anonymous public GET and POST APIs are server routes, and the server alone looks up the private row by its unguessable token. Keep Row Security enabled and empty grants on `quotations` and `business_settings`. Public output omits private fields; the quote acceptance path verifies approval and updates only acceptance columns and audit, never inventory.
+
+For real per-client-IP public API limits, only set `TRUST_PROXY_IP_HEADERS=true` when a trusted deployment proxy **overwrites** spoofable IP headers before forwarding to Next.js. Otherwise keep it unset; the server uses a shared fallback IP bucket plus per-token and global limits. Test this explicitly in Appwrite Sites before production. The backend does not yet implement a public `/q/[token]` frontend page.

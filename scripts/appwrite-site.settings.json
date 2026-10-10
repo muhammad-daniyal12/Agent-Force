@@ -1,0 +1,13 @@
+{
+  "description": "Nonsecret Console settings blueprint; not an Appwrite CLI deployment manifest.",
+  "repository": "muhammad-daniyal12/Agent-Force",
+  "reviewBranch": "feature/backend",
+  "rootDirectory": ".",
+  "framework": "Next.js",
+  "rendering": "ssr",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "requestTimeoutSeconds": 30,
+  "runtimeScopes": ["sessions.write", "rows.read", "rows.write"]
+}

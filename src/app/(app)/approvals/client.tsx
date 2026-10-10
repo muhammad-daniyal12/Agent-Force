@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, Check, CheckCircle2, Inbox, MessageSquareQuote, X } from "lucide-react";
 import { api, ApiError } from "@/lib/api/client";
 import { CustomerInsight } from "@/components/customer-insight";
+import { AlternativeSuggestions } from "@/components/alternatives";
 import { useAsync } from "@/lib/use-async";
 import { cn, formatCurrency, formatDate, shortId, taxLabel, timeAgo } from "@/lib/utils";
 import type { ActivityLog, Quotation } from "@/types";
@@ -271,6 +272,8 @@ function QuotationDetail({
             <div className="flex justify-between border-t border-border pt-2 font-semibold"><dt className="text-fg">Total</dt><dd className="tabular text-fg">{formatCurrency(quotation.total)}</dd></div>
           </dl>
         </div>
+
+        {quotation.status === "pending" && <AlternativeSuggestions quotation={quotation} />}
 
         <CustomerReply quotation={quotation} />
 

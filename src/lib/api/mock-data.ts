@@ -55,6 +55,7 @@ export const mockProducts: Product[] = [
   p("prd_13", "CHR-ERG-01", "Ergonomic Office Chair", "Furniture", 64_999, 9, 3),
   p("prd_14", "PAD-XL-DESK", "XL Desk Mat", "Accessories", 2_299, 63),
   p("prd_15", "SSD-EXT-1TB", "External SSD 1TB", "Storage", 21_999, 27, 6),
+  p("prd_16", "CAM-PRO-2K", "Webcam Pro 2K", "Video", 11_499, 25, 6),
 ];
 
 function quote(

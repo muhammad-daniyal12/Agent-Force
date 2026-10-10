@@ -21,6 +21,7 @@ import {
 import { api, ApiError } from "@/lib/api/client";
 import { isValidPhone, rememberCustomerPhone } from "@/lib/business";
 import { CustomerInsight } from "@/components/customer-insight";
+import { AlternativeSuggestions } from "@/components/alternatives";
 import { cn, formatCurrency, shortId, taxLabel } from "@/lib/utils";
 import type { AgentStep, AgentType, OperationRun, Quotation } from "@/types";
 import { Badge, Button, Card, CardHeader, Field, Input, PageHeader, Textarea } from "@/components/ui";
@@ -659,7 +660,8 @@ function QuotationResult({ quotation, summary, phone, onChange }: { quotation: Q
         </dl>
       </div>
 
-      <div className="px-5 pb-5">
+      <div className="space-y-4 px-5 pb-5">
+        <AlternativeSuggestions quotation={quotation} />
         <CustomerReply quotation={quotation} phone={phone} />
       </div>
 

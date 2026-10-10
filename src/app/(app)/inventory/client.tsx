@@ -10,6 +10,7 @@ import type { Product } from "@/types";
 import { Badge, Button, Card, EmptyState, ErrorState, Field, Input, PageHeader, Skeleton } from "@/components/ui";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { RestockPanel } from "@/components/restock-panel";
+import { ImportProducts } from "@/components/import-products";
 
 type Filter = "all" | "low" | "out";
 
@@ -53,9 +54,12 @@ export default function InventoryPage() {
         title="Inventory"
         description="The live catalog your Inventory Agent checks before any quotation is drafted."
         actions={
-          <Button onClick={() => setEditing("new")}>
-            <Plus className="h-4 w-4" aria-hidden /> Add product
-          </Button>
+          <>
+            <ImportProducts onImported={reload} />
+            <Button onClick={() => setEditing("new")}>
+              <Plus className="h-4 w-4" aria-hidden /> Add product
+            </Button>
+          </>
         }
       />
 

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Building2, Check, Info, Percent, ShieldCheck } from "lucide-react";
+import { Building2, Check, Info, Percent, PlayCircle, ShieldCheck } from "lucide-react";
+import { OPEN_TOUR } from "@/components/welcome-tour";
 import { isMockMode } from "@/lib/api/client";
 import { isValidPhone, useBusiness, useSaveBusiness, type BusinessProfile } from "@/lib/business";
 import { useSessionUser } from "@/components/session";
@@ -115,6 +116,13 @@ function SettingsForm({ initial, ready }: { initial: BusinessProfile; ready: boo
                   Agents can draft quotations and replies, but only you can approve them. Every decision is recorded in the activity log.
                 </p>
                 {isMockMode && <p className="mt-2 text-xs text-subtle">Demo data mode is on.</p>}
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new Event(OPEN_TOUR))}
+                  className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-brand hover:underline cursor-pointer"
+                >
+                  <PlayCircle className="h-4 w-4" aria-hidden /> Replay the welcome tour
+                </button>
               </div>
             </div>
           </Card>

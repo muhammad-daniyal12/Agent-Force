@@ -5,22 +5,43 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { BarChart3, BellRing, Bot, CheckCircle2, LayoutDashboard, Loader2, LogOut, Menu, Moon, Package, Settings, Sun, Workflow, X } from "lucide-react";
+import { BarChart3, BellRing, Bot, CheckCircle2, History, Users, LayoutDashboard, Loader2, LogOut, Menu, Moon, Package, Settings, Sun, Workflow, X } from "lucide-react";
 import { api, ApiError, auth, isMockMode, type SessionUser } from "@/lib/api/client";
 import { SessionContext } from "@/components/session";
 import { BrandMark } from "@/components/brand-mark";
+import { WelcomeTour } from "@/components/welcome-tour";
 import { useBusiness } from "@/lib/business";
 import { cn } from "@/lib/utils";
 
-const nav = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/operations", label: "AI Operations", icon: Workflow },
-  { href: "/agents", label: "Agents", icon: Bot },
-  { href: "/inventory", label: "Inventory", icon: Package },
-  { href: "/approvals", label: "Approval Center", icon: CheckCircle2, badge: true },
-  { href: "/follow-ups", label: "Follow-ups", icon: BellRing },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/settings", label: "Settings", icon: Settings },
+type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; badge?: boolean };
+
+// Grouped so ten pages stay scannable: daily work first, then the business, then setup.
+const navSections: { title: string; items: NavItem[] }[] = [
+  {
+    title: "Work",
+    items: [
+      { href: "/", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/operations", label: "AI Operations", icon: Workflow },
+      { href: "/approvals", label: "Approval Center", icon: CheckCircle2, badge: true },
+      { href: "/follow-ups", label: "Follow-ups", icon: BellRing },
+    ],
+  },
+  {
+    title: "Business",
+    items: [
+      { href: "/customers", label: "Customers", icon: Users },
+      { href: "/inventory", label: "Inventory", icon: Package },
+      { href: "/reports", label: "Reports", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Team",
+    items: [
+      { href: "/agents", label: "Agents", icon: Bot },
+      { href: "/activity", label: "Activity log", icon: History },
+      { href: "/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
 
 /** Fired by pages after creating/approving quotations so the sidebar count stays fresh. */
@@ -54,30 +75,37 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const pending = usePendingCount();
   return (
-    <nav className="space-y-0.5" aria-label="Main">
-      {nav.map(({ href, label, icon: Icon, badge }) => {
-        const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary",
-              active ? "bg-primary-soft text-fg" : "text-muted hover:bg-surface-2 hover:text-fg",
-            )}
-          >
-            <Icon className={cn("h-4 w-4", active && "text-brand")} aria-hidden />
-            <span className="flex-1">{label}</span>
-            {badge && pending !== null && pending > 0 && (
-              <span className="tabular rounded-full bg-primary px-1.5 py-px text-[11px] font-semibold text-primary-fg" aria-label={`${pending} pending`}>
-                {pending}
-              </span>
-            )}
-          </Link>
-        );
-      })}
+    <nav className="space-y-5" aria-label="Main">
+      {navSections.map((section) => (
+        <div key={section.title}>
+          <p className="mb-1.5 px-3 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-subtle">{section.title}</p>
+          <div className="space-y-0.5">
+            {section.items.map(({ href, label, icon: Icon, badge }) => {
+              const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={onNavigate}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    active ? "bg-primary-soft text-fg" : "text-muted hover:bg-surface-2 hover:text-fg",
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4", active && "text-brand")} aria-hidden />
+                  <span className="flex-1">{label}</span>
+                  {badge && pending !== null && pending > 0 && (
+                    <span className="tabular rounded-full bg-primary px-1.5 py-px text-[11px] font-semibold text-primary-fg" aria-label={`${pending} pending`}>
+                      {pending}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 }
@@ -183,13 +211,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col justify-between border-r border-border bg-surface px-4 py-5 lg:flex">
-        <div className="space-y-7">
+        <div className="-mr-2 min-h-0 space-y-7 overflow-y-auto pr-2">
           <div className="px-1">
             <Logo />
           </div>
           <NavLinks />
         </div>
-        {footer}
+        <div className="shrink-0 pt-4">{footer}</div>
       </aside>
 
       {/* Mobile top bar */}
@@ -210,7 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 left-0 flex w-72 flex-col justify-between bg-surface px-4 py-5 shadow-pop">
-            <div className="space-y-7">
+            <div className="-mr-2 min-h-0 space-y-7 overflow-y-auto pr-2">
               <div className="flex items-center justify-between px-1">
                 <Logo />
                 <button
@@ -224,13 +252,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
               <NavLinks onNavigate={() => setOpen(false)} />
             </div>
-            {footer}
+            <div className="shrink-0 pt-4">{footer}</div>
           </div>
         </div>
       )}
 
       <main className="overflow-x-clip lg:pl-64">
         <div key={pathname} className="animate-fade-up mx-auto w-full max-w-[1360px] px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+          {session === "ready" && <WelcomeTour />}
           {session === "ready" ? (
             children
           ) : session === "error" ? (

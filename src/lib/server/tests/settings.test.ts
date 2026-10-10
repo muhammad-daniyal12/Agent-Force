@@ -40,17 +40,24 @@ async function json(response: Response, status = 200) {
   return response.json();
 }
 
+// Rate limiting writes its own internal rows; count only business records.
+function businessRowCount() {
+  return [...fixture.rows.keys()].filter(
+    (key) => key.startsWith("business_settings/") || key.startsWith("activity_logs/"),
+  ).length;
+}
+
 test("settings require a verified session and same origin for writes", async () => {
   await json(await settings.GET(request("GET", undefined, null)), 401);
   await json(await settings.PUT(request("PUT", { name: "Shop" }, null)), 401);
   await json(await settings.PUT(request("PUT", { name: "Shop" }, "owner-one", "https://attacker.example")), 403);
-  assert.equal(fixture.rows.size, 0);
+  assert.equal(businessRowCount(), 0);
 });
 
 test("GET uses the owner's account name until settings are saved", async () => {
   const fallback = await json(await settings.GET(request("GET")));
   assert.deepEqual(fallback, { name: "Ali", city: "", phone: "", email: "" });
-  assert.equal(fixture.rows.size, 0);
+  assert.equal(businessRowCount(), 0);
 });
 
 test("PUT persists owner-scoped settings and audits changes", async () => {
@@ -62,7 +69,7 @@ test("PUT persists owner-scoped settings and audits changes", async () => {
   assert.deepEqual(await json(await settings.GET(request("GET"))), result);
   const updated = await json(await settings.PUT(request("PUT", { name: "New Shop" })));
   assert.deepEqual(updated, { name: "New Shop", city: "", phone: "", email: "" });
-  assert.equal(fixture.rows.size, 3); // one settings record and two audit records
+  assert.equal(businessRowCount(), 3); // one settings record and two audit records
 });
 
 test("two owners cannot read each other's settings", async () => {
@@ -87,5 +94,5 @@ test("PUT rejects malformed, injected and invalid fields", async () => {
   ]) {
     await json(await settings.PUT(request("PUT", payload)), 422);
   }
-  assert.equal(fixture.rows.size, 0);
+  assert.equal(businessRowCount(), 0);
 });

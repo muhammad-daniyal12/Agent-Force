@@ -102,7 +102,7 @@ export async function followUpQuotation(
       );
       await store.activity(
         "Admin",
-        `Admin followed up with \${quote.customerName}`,
+        `Admin followed up with ${quote.customerName}`,
         id,
         transactionId,
       );

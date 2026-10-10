@@ -79,6 +79,7 @@ export const businessSchema: {
       owner,
       text("customerName", 120),
       text("customerEmail", 254),
+      text("customerPhone", 20, false),
       { key: "request", type: "text", required: true },
       { key: "itemsJson", type: "text", required: true },
       money("subtotal"),

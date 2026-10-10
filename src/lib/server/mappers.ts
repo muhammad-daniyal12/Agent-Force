@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { ActivityLog, Product, Quotation } from "./contracts";
 import { ApiError } from "./errors";
 import type { BusinessRow } from "./store";
-import { productInput, quotationItems, quotationStatus } from "./validation";
+import { customerPhoneInput, productInput, quotationItems, quotationStatus } from "./validation";
 
 function stored<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
@@ -37,6 +37,7 @@ export function quoteDto(row: BusinessRow): Quotation {
     z.object({
       customerName: z.string().min(1).max(120),
       customerEmail: z.email().max(254),
+      customerPhone: customerPhoneInput.optional(),
       request: z.string().min(1).max(2000),
       items: quotationItems,
       subtotal: z.number().finite().nonnegative(),
@@ -49,6 +50,9 @@ export function quoteDto(row: BusinessRow): Quotation {
     {
       customerName: row.customerName,
       customerEmail: row.customerEmail,
+      ...(row.customerPhone != null && row.customerPhone !== ""
+        ? { customerPhone: row.customerPhone }
+        : {}),
       request: row.request,
       items,
       subtotal: row.subtotal,

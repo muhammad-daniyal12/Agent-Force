@@ -31,6 +31,7 @@ export interface Quotation {
   id: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   request: string;
   items: QuotationItem[];
   subtotal: number;

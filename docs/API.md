@@ -181,3 +181,18 @@ curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" -
 ```
 
 The frontend's existing browser-local `src/lib/business.ts` profile is **not yet connected** to this API and must be migrated separately by the frontend engineer.
+
+## Customer WhatsApp number on quotations (backend-v2)
+
+`POST /api/operations/run` optionally accepts `customerPhone` as well as the existing fields. Accepted input is a string containing **10–15 digits** with optional leading `+`, spaces, dots, parentheses or hyphens. The backend strips formatting characters and stores only digits (e.g. `+92 300 1234567` becomes `923001234567`); an absent or blank number is omitted. Invalid input returns 422. The number belongs to the authenticated owner's quotation, not to a global customer database.
+
+The optional `Quotation.customerPhone?: string` appears in the `OperationRun.quotation`, quotation list/get results, and approved/rejected quotation responses when present. Existing quotations and requests without the number retain their **original response shape**. Owner scoping, session, Origin validation on POST, input limits, and idempotency protection are unchanged; idempotency compares normalized phone digits.
+
+Authenticated PowerShell example (with the `Write-Body` and `$cookieJar` helpers above):
+
+```powershell
+Write-Body @{ customerName = "Ali"; customerEmail = "ali@example.com"; customerPhone = "+92 300 1234567"; request = "I need 10 wireless mice and 5 USB-C hubs" }
+curl.exe --fail-with-body -b $cookieJar -H "Origin: $base" --json "@$bodyFile" "$base/api/operations/run"
+```
+
+**Provisioning:** `scripts/schema.ts` now declares an **optional** `customerPhone varchar(20)` column on the `quotations` table. Before deploying this branch or sending `customerPhone` in production, provision the new column with `npm run setup:appwrite` using the private setup key. The legacy browser-only phone store is not yet wired to this API and must be switched separately by the frontend engineer.

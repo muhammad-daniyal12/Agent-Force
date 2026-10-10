@@ -579,3 +579,71 @@ test("Appwrite Sites uses the injected regional configuration and per-request ke
     process.env.APPWRITE_API_KEY = "test-server-key";
   }
 });
+
+test("optional customerPhone persists through operation, owner quote views and approval", async () => {
+  const operation = await body<OperationRun>(
+    await operations.POST(request("/api/operations/run", "POST", {
+      ...demo, customerPhone: "+92 (300) 123-4567",
+    })),
+  );
+  const quote = operation.quotation!;
+  assert.equal(quote.customerPhone, "923001234567");
+  assert.equal(fixture.rows.get(`quotations/${quote.id}`)?.customerPhone, "923001234567");
+  const list = await body<Quotation[]>(await quotations.GET(request("/api/quotations")));
+  assert.equal(list[0].customerPhone, "923001234567");
+  const fetched = await body<Quotation>(
+    await quotation.GET(request(`/api/quotations/${quote.id}`), context(quote.id)),
+  );
+  assert.equal(fetched.customerPhone, "923001234567");
+  const approved = await body<Quotation>(
+    await approve.POST(request(`/api/quotations/${quote.id}/approve`, "POST", {}), context(quote.id)),
+  );
+  assert.equal(approved.customerPhone, "923001234567");
+  await body(
+    await quotation.GET(
+      request(`/api/quotations/${quote.id}`, "GET", undefined, "owner-two"),
+      context(quote.id),
+    ),
+    404,
+  );
+});
+
+test("legacy and no-phone quotations keep the original DTO shape", async () => {
+  const quote = (await run()).quotation!;
+  assert.equal(Object.hasOwn(quote, "customerPhone"), false);
+  const rejected = await body<Quotation>(
+    await reject.POST(request(`/api/quotations/${quote.id}/reject`, "POST", {}), context(quote.id)),
+  );
+  assert.equal(Object.hasOwn(rejected, "customerPhone"), false);
+  const fromList = await body<Quotation[]>(await quotations.GET(request("/api/quotations")));
+  assert.equal(Object.hasOwn(fromList[0], "customerPhone"), false);
+});
+
+test("customerPhone validation rejects malformed numbers and normalizes valid ones", async () => {
+  for (const customerPhone of ["123456789", "1234567890123456", "+92 abc 0300", "0300+1234567", "1".repeat(41)]) {
+    await body(
+      await operations.POST(request("/api/operations/run", "POST", { ...demo, customerPhone })),
+      422,
+    );
+  }
+  assert.equal([...fixture.rows.keys()].filter((key) => key.startsWith("quotations/")).length, 0);
+  const quote = (await body<OperationRun>(await operations.POST(
+    request("/api/operations/run", "POST", { ...demo, customerPhone: "" }),
+  ))).quotation!;
+  assert.equal(Object.hasOwn(quote, "customerPhone"), false);
+});
+
+test("normalized phone is covered by operation idempotency", async () => {
+  const key = "phone-retry";
+  const first = await body<OperationRun>(await operations.POST(
+    request("/api/operations/run", "POST", { ...demo, customerPhone: "+92 300 1234567" }, "owner-one", { "Idempotency-Key": key }),
+  ));
+  const same = await body<OperationRun>(await operations.POST(
+    request("/api/operations/run", "POST", { ...demo, customerPhone: "923001234567" }, "owner-one", { "Idempotency-Key": key }),
+  ));
+  assert.equal(first.id, same.id);
+  assert.equal(same.quotation?.customerPhone, "923001234567");
+  await body(await operations.POST(
+    request("/api/operations/run", "POST", { ...demo, customerPhone: "03001234567" }, "owner-one", { "Idempotency-Key": key }),
+  ), 409);
+});

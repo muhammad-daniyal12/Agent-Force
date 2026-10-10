@@ -26,10 +26,24 @@ already provisioned and a coordinated migration is not available.
    `SEED_OWNER_USER_ID` to the first owner's exact User ID. Keep passwords private.
 6. Register Web app hostname `localhost` under **Apps**, and later the exact Site
    hostname. Use hostnames without protocol, path, port, or wildcards.
-7. Run `npm run setup:appwrite`, then `npm run seed`. Both scripts load
+7. Run `npm run setup:appwrite`, `npm run check:appwrite`, then `npm run seed`. These scripts load
    `.env.local`. Setup only creates missing compatible resources; seed skips
    existing owner/SKU pairs and never resets edited prices/stock. Seed adds 15
    office products, including three low-stock products and one out-of-stock item.
+
+`check:appwrite` is read-only: it checks configuration, reaches the regional API,
+and verifies runtime-key reads of the five TablesDB tables without printing row
+contents or keys. A missing runtime key or unprovisioned table fails the check;
+it does not create resources or deploy. It does not verify write/session scopes;
+the authenticated demo flow below verifies those after setup and seed.
+
+For the planned custom domain `agent-force.tech`, keep local
+`APP_ORIGIN=http://localhost:3000` during development. Connect the domain through
+Appwrite Sites after the application is functional. When that deployment is
+authorized and the domain is connected, set the Site's `APP_ORIGIN` to
+`https://agent-force.tech` (or the exact hostname the team chooses), register the
+matching Web app hostname, and redeploy. Do not change the Appwrite API endpoint
+to the website domain.
 
 The setup script refuses unsafe table grants or incompatible required columns,
 types, sizes, bounds, enums, and indexes. Review its safe error/HTTP status locally

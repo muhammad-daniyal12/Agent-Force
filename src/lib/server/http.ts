@@ -62,6 +62,10 @@ export async function respond(
           traceId,
           status: safe.status,
           type: error instanceof Error ? error.name : "UnknownError",
+          // Safe operational diagnostics only: numeric status and SDK error
+          // category. Never log SDK message, URL, request body, or credentials.
+          appwriteCode: error instanceof AppwriteException ? error.code : undefined,
+          appwriteType: error instanceof AppwriteException ? error.type : undefined,
         }),
       );
     response = NextResponse.json(

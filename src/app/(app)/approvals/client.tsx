@@ -7,6 +7,8 @@ import { AlertTriangle, ArrowLeft, Check, CheckCircle2, Inbox, MessageSquareQuot
 import { api, ApiError } from "@/lib/api/client";
 import { CustomerInsight } from "@/components/customer-insight";
 import { AlternativeSuggestions } from "@/components/alternatives";
+import { useDealers } from "@/lib/dealers";
+import { alertLowStockAfterApproval } from "@/lib/restock-alert";
 import { useAsync } from "@/lib/use-async";
 import { cn, formatCurrency, formatDate, shortId, taxLabel, timeAgo } from "@/lib/utils";
 import type { ActivityLog, Quotation } from "@/types";
@@ -176,6 +178,8 @@ function QuotationDetail({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
   const shortage = quotation.items.filter((i) => !i.inStock);
+  const dealers = useDealers();
+  const router = useRouter();
 
   async function decide(kind: "approve" | "reject") {
     setBusy(kind);
@@ -191,6 +195,7 @@ function QuotationDetail({
       toast.success(kind === "approve" ? "Quotation approved" : "Quotation rejected", {
         description: kind === "approve" ? `${updated.customerName} can now receive this quotation. Stock reserved.` : "This draft won't be sent.",
       });
+      if (kind === "approve") void alertLowStockAfterApproval(updated, dealers, () => router.push("/inventory"));
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         // Decided in another tab or stock changed since the quote: reload the latest data.

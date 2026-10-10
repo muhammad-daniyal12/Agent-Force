@@ -22,6 +22,9 @@ import { api, ApiError } from "@/lib/api/client";
 import { isValidPhone, rememberCustomerPhone } from "@/lib/business";
 import { CustomerInsight } from "@/components/customer-insight";
 import { AlternativeSuggestions } from "@/components/alternatives";
+import { useRouter } from "next/navigation";
+import { useDealers } from "@/lib/dealers";
+import { alertLowStockAfterApproval } from "@/lib/restock-alert";
 import { cn, formatCurrency, shortId, taxLabel } from "@/lib/utils";
 import type { AgentStep, AgentType, OperationRun, Quotation } from "@/types";
 import { Badge, Button, Card, CardHeader, Field, Input, PageHeader, Textarea } from "@/components/ui";
@@ -576,6 +579,8 @@ function ToolOutput({ step }: { step: AgentStep }) {
 function QuotationResult({ quotation, summary, phone, onChange }: { quotation: Quotation; summary: string; phone: string; onChange: (q: Quotation) => void }) {
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
   const shortage = quotation.items.some((i) => !i.inStock);
+  const dealers = useDealers();
+  const router = useRouter();
 
   async function decide(kind: "approve" | "reject") {
     setBusy(kind);
@@ -586,6 +591,7 @@ function QuotationResult({ quotation, summary, phone, onChange }: { quotation: Q
       toast.success(kind === "approve" ? "Quotation approved" : "Quotation rejected", {
         description: kind === "approve" ? `Ready to send to ${updated.customerName}. Stock has been reserved.` : "The customer won't receive this draft.",
       });
+      if (kind === "approve") void alertLowStockAfterApproval(updated, dealers, () => router.push("/inventory"));
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         // Already decided elsewhere or stock changed: show the latest state instead of a stale card.

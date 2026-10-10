@@ -42,13 +42,14 @@ npm run dev
 
 Setup creates compatible missing resources. Seeding skips existing owner/SKU pairs and preserves edited stock and prices. Open [localhost:3000](http://localhost:3000); frontend integration uses [docs/API.md](docs/API.md).
 
-Sign in at `/login` using an owner account created under Appwrite Auth. The frontend calls the real backend by default. `NEXT_PUBLIC_USE_MOCK=true` enables UI-only sample data and skips login; leave it unset or `false` for the real AI demo and deployment. This public flag contains no credentials and is fixed at build time.
+Sign in at `/login` with email/password or Google, or create an account at `/signup`. New accounts start with their own empty workspace. See [Google and registration setup](docs/AUTH_SETUP.md) for the Appwrite Console checklist and verification steps. The frontend calls the real backend by default. `NEXT_PUBLIC_USE_MOCK=true` enables UI-only sample data; leave it unset or `false` for real authentication, the AI demo, and deployment. This public flag contains no credentials and is fixed at build time.
 
 ## Screens
 
 | Route | Screen |
 | --- | --- |
-| `/login` | Owner sign-in |
+| `/login` | Email/password or Google sign-in |
+| `/signup` | Email/password or Google account creation |
 | `/` | Dashboard and activity |
 | `/operations` | Customer requests and the three-agent workflow |
 | `/inventory` | Product catalog and stock management |

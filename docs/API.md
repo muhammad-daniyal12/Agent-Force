@@ -27,6 +27,14 @@ private/no-store. Authentication does not use localStorage or browser API keys.
 | GET    | `/api/auth/me`     | None                  | Same user payload, 200                                          |
 | POST   | `/api/auth/logout` | None                  | `{ data: { loggedOut: true } }`, 200 + expired cookie           |
 
+Account registration adds `POST /api/auth/signup` with
+`{ name, email, password, confirmPassword }`, returning the same user payload
+with status 201 and a session cookie. Google login/signup uses a native
+`POST /api/auth/google/start` form (`next` optional), then
+`GET /api/auth/google/callback` for Appwrite's one-use token exchange. See
+[AUTH_SETUP.md](AUTH_SETUP.md) for validation, rate limits, callback security,
+and the Appwrite Console checklist. New accounts receive no demo inventory.
+
 The business endpoints below return **bare DTOs/arrays** exactly as in the pasted
 brief, without a success envelope. All handled errors return `{ "error": "safe
 message" }`, with `X-Request-ID` for troubleshooting. Use the HTTP status for

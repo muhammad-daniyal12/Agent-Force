@@ -22,18 +22,32 @@ export async function appwriteFixture() {
   const versions = new Map<string, number>();
   const transactions = new Map<string, Transaction>();
   const sessions = new Map<string, string>();
+  const users = new Map<
+    string,
+    {
+      $id: string;
+      name: string;
+      email: string;
+      password: string;
+      status: boolean;
+    }
+  >();
+  const oauthTokens = new Map<string, string>();
+  const auth = { failSession: false, emptySecret: false, oauthRedirect: "" };
   const calls: {
     method: string;
     path: string;
     session?: string;
     key?: string;
+    query?: Record<string, string>;
+    body?: Record<string, unknown>;
   }[] = [];
   let sequence = 0;
   const cloneRows = () =>
     new Map([...rows].map(([key, value]) => [key, structuredClone(value)]));
-  const fail = (status: number, type: string) => {
+  function fail(status: number, type: string): never {
     throw { status, type };
-  };
+  }
   function select(
     source: Map<string, Row>,
     table: string,
@@ -122,43 +136,96 @@ export async function appwriteFixture() {
       const method = request.method!;
       const session = String(request.headers["x-appwrite-session"] ?? "");
       const key = String(request.headers["x-appwrite-key"] ?? "");
-      calls.push({ method, path, session, key });
+      const call = {
+        method,
+        path,
+        session,
+        key,
+        query: Object.fromEntries(url.searchParams),
+        body: undefined as Record<string, unknown> | undefined,
+      };
+      calls.push(call);
       const chunks: Buffer[] = [];
       for await (const chunk of request) chunks.push(Buffer.from(chunk));
       const body = chunks.length
         ? JSON.parse(Buffer.concat(chunks).toString())
         : {};
-      if (path === "/account" && method === "GET") {
-        const owner = sessions.get(session);
-        if (!owner) fail(401, "user_unauthorized");
-        return send(response, {
-          $id: owner,
-          name: owner === "owner-one" ? "Ali" : "Second Owner",
-          email: `${owner}@example.com`,
-          status: true,
-        });
-      }
-      if (path === "/account/sessions/email" && method === "POST") {
-        if (key !== "test-server-key") fail(401, "general_unauthorized_scope");
-        if (
-          body.password !== "demo-password" ||
-          !["owner-one@example.com", "owner-two@example.com"].includes(
-            body.email,
-          )
-        )
-          fail(401, "user_invalid_credentials");
-        const owner = body.email.split("@")[0];
+      call.body = body;
+      function issueSession(owner: string) {
+        if (auth.failSession) fail(503, "session_creation_failed");
         const secret = `${owner}-session`;
         sessions.set(secret, owner);
         return send(
           response,
           {
             $id: `session-${owner}`,
-            secret,
+            userId: owner,
+            secret: auth.emptySecret ? "" : secret,
             expire: new Date(Date.now() + 3600000).toISOString(),
           },
           201,
         );
+      }
+      if (path === "/account" && method === "GET") {
+        const owner = sessions.get(session);
+        if (!owner) fail(401, "user_unauthorized");
+        const user = users.get(owner);
+        if (!user) fail(401, "user_unauthorized");
+        return send(response, {
+          $id: owner,
+          name: user!.name,
+          email: user!.email,
+          status: user!.status,
+        });
+      }
+      if (path === "/account" && method === "POST") {
+        if (key !== "test-server-key") fail(401, "general_unauthorized_scope");
+        if ([...users.values()].some((user) => user.email === body.email))
+          fail(409, "user_already_exists");
+        if (body.password === "common-password")
+          fail(400, "user_password_not_allowed");
+        const user = {
+          $id: body.userId,
+          name: body.name,
+          email: body.email,
+          password: body.password,
+          status: true,
+        };
+        users.set(user.$id, user);
+        return send(
+          response,
+          { $id: user.$id, name: user.name, email: user.email, status: true },
+          201,
+        );
+      }
+      if (path === "/account/tokens/oauth2/google" && method === "GET") {
+        if (key !== "test-server-key") fail(401, "general_unauthorized_scope");
+        response.writeHead(302, {
+          location:
+            auth.oauthRedirect ||
+            `https://accounts.google.com/o/oauth2/v2/auth?state=${url.searchParams.get("state")}`,
+        });
+        response.end();
+        return;
+      }
+      if (path === "/account/sessions/token" && method === "POST") {
+        if (key !== "test-server-key") fail(401, "general_unauthorized_scope");
+        if (
+          !oauthTokens.has(body.secret) ||
+          oauthTokens.get(body.secret) !== body.userId
+        )
+          fail(401, "user_invalid_token");
+        oauthTokens.delete(body.secret);
+        return issueSession(body.userId);
+      }
+      if (path === "/account/sessions/email" && method === "POST") {
+        if (key !== "test-server-key") fail(401, "general_unauthorized_scope");
+        const user = [...users.values()].find(
+          (value) =>
+            value.email === body.email && value.password === body.password,
+        );
+        if (!user) fail(401, "user_invalid_credentials");
+        return issueSession(user!.$id);
       }
       if (path === "/account/sessions/current" && method === "DELETE") {
         if (!sessions.has(session)) fail(401, "user_unauthorized");
@@ -313,15 +380,50 @@ export async function appwriteFixture() {
     versions.clear();
     transactions.clear();
     sessions.clear();
+    users.clear();
+    oauthTokens.clear();
+    auth.failSession = false;
+    auth.emptySecret = false;
+    auth.oauthRedirect = "";
     calls.length = 0;
     sessions.set("owner-one-session", "owner-one");
     sessions.set("owner-two-session", "owner-two");
+    users.set("owner-one", {
+      $id: "owner-one",
+      name: "Ali",
+      email: "owner-one@example.com",
+      password: "demo-password",
+      status: true,
+    });
+    users.set("owner-two", {
+      $id: "owner-two",
+      name: "Second Owner",
+      email: "owner-two@example.com",
+      password: "demo-password",
+      status: true,
+    });
   };
   reset();
   return {
     endpoint: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`,
     rows,
     calls,
+    users,
+    sessions,
+    auth,
+    issueOAuthToken(userId: string) {
+      if (!users.has(userId))
+        users.set(userId, {
+          $id: userId,
+          name: "Google Owner",
+          email: `${userId}@example.com`,
+          password: "",
+          status: true,
+        });
+      const secret = `${userId}-oauth-token-${++sequence}`;
+      oauthTokens.set(secret, userId);
+      return secret;
+    },
     reset,
     insert(table: string, id: string, data: Record<string, unknown>) {
       const now = new Date().toISOString();

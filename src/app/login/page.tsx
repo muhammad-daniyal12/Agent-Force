@@ -2,11 +2,14 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { AlertTriangle, Boxes, Check, Eye, EyeOff, Headset, Loader2, Lock, LogIn, MapPin, Receipt, ShieldCheck, UserCheck, type LucideIcon } from "lucide-react";
 import { auth, ApiError, isMockMode } from "@/lib/api/client";
 import { Button, Field, Input } from "@/components/ui";
 import { BrandMark } from "@/components/brand-mark";
 import { cn } from "@/lib/utils";
+import { GoogleSignIn } from "@/components/auth/google-sign-in";
+import { safeAuthRedirect } from "@/lib/auth-redirect";
 
 export default function LoginPage() {
   return (
@@ -17,9 +20,7 @@ export default function LoginPage() {
 }
 
 /** Only allow same-site relative paths as the post-login destination. */
-function safeNext(next: string | null) {
-  return next && next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/login") ? next : "/";
-}
+const safeNext = safeAuthRedirect;
 
 const usePrefersReducedMotion = () => {
   const [reduced, setReduced] = useState(false);
@@ -254,7 +255,7 @@ function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(params.get("authError") === "google_cancelled" ? "Google sign-in was cancelled. Try again when you're ready." : null);
   const [errorCount, setErrorCount] = useState(0);
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -359,7 +360,10 @@ function LoginScreen() {
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Checking your session…
                   </div>
                 ) : (
-                  <form key={errorCount} onSubmit={submit} className={cn("mt-7 space-y-4", errorCount > 0 && "animate-shake")} noValidate>
+                  <>
+                  <div className="mt-7"><GoogleSignIn next={next} disabled={busy} /></div>
+                  <div className="my-5 flex items-center gap-3 text-xs text-subtle"><span className="h-px flex-1 bg-border" /> or sign in with email <span className="h-px flex-1 bg-border" /></div>
+                  <form key={errorCount} onSubmit={submit} className={cn("space-y-4", errorCount > 0 && "animate-shake")} noValidate>
                     <Field label="Email" htmlFor="email">
                       <Input
                         id="email"
@@ -412,9 +416,10 @@ function LoginScreen() {
                     </Button>
 
                     <p className="text-center text-xs text-muted">
-                      {isMockMode ? "Demo data mode: any email and password will work." : "Accounts are created by your administrator."}
+                      {isMockMode ? "Demo data mode: email sign-in uses sample data." : <>New to AgentForce? <Link className="font-semibold text-primary hover:underline" href={`/signup?next=${encodeURIComponent(next)}`}>Create an account</Link></>}
                     </p>
                   </form>
+                  </>
                 )}
               </>
             )}

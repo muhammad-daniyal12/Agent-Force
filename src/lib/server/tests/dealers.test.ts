@@ -105,7 +105,7 @@ test("dealers CRUD preserves array categories and only exposes own rows", async 
   assert.equal(updated.name, "New Supplier");
   assert.deepEqual(updated.categories, []);
   assert.equal(updated.phone, created.phone);
-  assert.deepEqual(await json<Dealer[]>(await dealers.GET(req("/api/dealers", "GET", undefined, "owner-two")), []);
+  assert.deepEqual(await json<Dealer[]>(await dealers.GET(req("/api/dealers", "GET", undefined, "owner-two"))), []);
   await json(await dealer.PATCH(
     req("/api/dealers/" + created.id, "PATCH", { name: "Attack" }, "owner-two"), ctx(created.id),
   ), 404);

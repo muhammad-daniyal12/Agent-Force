@@ -22,6 +22,9 @@
 
   --chart-1: #3b82f6;
   --chart-2: #10b981;
+  /* Quotation chart: vivid blue = generated, emerald = approved. Validated with the dataviz palette checks. */
+  --chart-generated: #4f7cff;
+  --chart-approved: #12b886;
 
   --support: #2563eb;
   --support-soft: #e6eefd;
@@ -60,6 +63,8 @@
 
   --chart-1: #60a5fa;
   --chart-2: #34d399;
+  --chart-generated: #5a87ff;
+  --chart-approved: #10a070;
 
   --support: #60a5fa;
   --support-soft: #0f1d35;

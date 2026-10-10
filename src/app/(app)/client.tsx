@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, CheckCircle2, Clock, FileText, Inbox, Plus, Wallet } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api, isMockMode } from "@/lib/api/client";
 import { mockWeeklyVolume } from "@/lib/api/mock-data";
 import { useAsync } from "@/lib/use-async";
@@ -29,6 +29,43 @@ function weeklyVolume(quotations: Quotation[]) {
   });
 }
 
+type DayVolume = { day: string; quotations: number; approved: number };
+
+/** Hover card for one day: both counts and that day's approval rate. */
+function VolumeTooltip({ active, payload }: { active?: boolean; payload?: { payload: DayVolume }[] }) {
+  const d = active ? payload?.[0]?.payload : undefined;
+  if (!d) return null;
+  const rate = d.quotations ? Math.round((d.approved / d.quotations) * 100) : 0;
+  return (
+    <div className="min-w-40 rounded-xl border border-border bg-surface px-3.5 py-3 text-xs shadow-pop">
+      <p className="text-[13px] font-semibold text-fg">{d.day}</p>
+      <dl className="mt-2 space-y-1.5">
+        <div className="flex items-center justify-between gap-6">
+          <dt className="flex items-center gap-1.5 text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-generated)]" />Generated</dt>
+          <dd className="tabular font-medium text-fg">{d.quotations}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-6">
+          <dt className="flex items-center gap-1.5 text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-approved)]" />Approved</dt>
+          <dd className="tabular font-medium text-fg">{d.approved}</dd>
+        </div>
+      </dl>
+      <p className="mt-2 border-t border-border pt-2 text-muted">
+        <span className="font-semibold text-fg">{rate}%</span> approved
+      </p>
+    </div>
+  );
+}
+
+/** Labels only the busiest day, so the chart isn't covered in numbers. */
+function PeakLabel({ peak, x, y, width, value }: { peak: number; x?: number | string; y?: number | string; width?: number | string; value?: number | string }) {
+  if (Number(value) !== peak || peak === 0) return null;
+  return (
+    <text x={Number(x) + Number(width) / 2} y={Number(y) - 8} textAnchor="middle" fill="var(--fg)" fontSize={12} fontWeight={600}>
+      {value}
+    </text>
+  );
+}
+
 const agentBar: Record<AgentType, string> = { support: "bg-support", inventory: "bg-inventory", sales: "bg-sales" };
 
 export default function DashboardPage() {
@@ -46,7 +83,7 @@ export default function DashboardPage() {
   const volume = quotations ? weeklyVolume(quotations) : [];
   const weekGenerated = volume.reduce((s, d) => s + d.quotations, 0);
   const weekApproved = volume.reduce((s, d) => s + d.approved, 0);
-  const approvalRate = weekGenerated ? Math.round((weekApproved / weekGenerated) * 100) : 0;
+  const peakGenerated = Math.max(0, ...volume.map((d) => d.quotations));  const approvalRate = weekGenerated ? Math.round((weekApproved / weekGenerated) * 100) : 0;
   const hoursSaved = Math.round((weekGenerated * MINUTES_SAVED_PER_QUOTE) / 60);
   const totalTasks = agents?.reduce((s, a) => s + a.tasksCompleted, 0) || 1;
 
@@ -114,11 +151,11 @@ export default function DashboardPage() {
                 </div>
                 <dl className="flex flex-wrap gap-x-6 gap-y-2">
                   <div>
-                    <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2 w-2 rounded-full bg-[var(--chart-1)]" />Generated</dt>
+                    <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-generated)]" />Generated</dt>
                     <dd className="tabular text-lg font-semibold text-fg">{loading ? "–" : weekGenerated}</dd>
                   </div>
                   <div>
-                    <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2 w-2 rounded-full bg-[var(--chart-2)]" />Approved</dt>
+                    <dt className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2.5 w-2.5 rounded-[3px] bg-[var(--chart-approved)]" />Approved</dt>
                     <dd className="tabular text-lg font-semibold text-fg">{loading ? "–" : weekApproved}</dd>
                   </div>
                   <div>
@@ -136,27 +173,16 @@ export default function DashboardPage() {
                   <Skeleton className="h-full w-full" />
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={volume} barGap={4} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="gradGenerated" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={1} />
-                          <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.55} />
-                        </linearGradient>
-                        <linearGradient id="gradApproved" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={1} />
-                          <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.55} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
-                      <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fill: "var(--muted)", fontSize: 12 }} />
-                      <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "var(--muted)", fontSize: 12 }} />
-                      <Tooltip
-                        cursor={{ fill: "var(--surface-2)", radius: 6 }}
-                        contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, color: "var(--fg)", boxShadow: "var(--shadow-lg)" }}
-                        labelStyle={{ color: "var(--fg)", fontWeight: 600, marginBottom: 4 }}
-                      />
-                      <Bar dataKey="quotations" name="Generated" fill="url(#gradGenerated)" radius={[6, 6, 0, 0]} maxBarSize={24} animationDuration={900} animationBegin={200} />
-                      <Bar dataKey="approved" name="Approved" fill="url(#gradApproved)" radius={[6, 6, 0, 0]} maxBarSize={24} animationDuration={900} animationBegin={350} />
+                    {/* Two flat bars per day with a small gap: vivid blue = generated, emerald = approved. */}
+                    <BarChart data={volume} barSize={16} barGap={3} barCategoryGap="28%" margin={{ top: 22, right: 8, left: -22, bottom: 0 }}>
+                      <CartesianGrid vertical={false} stroke="var(--border)" />
+                      <XAxis dataKey="day" tickLine={false} axisLine={{ stroke: "var(--border-strong)" }} tick={{ fill: "var(--muted)", fontSize: 12 }} />
+                      <YAxis allowDecimals={false} tickCount={4} tickLine={false} axisLine={false} tick={{ fill: "var(--subtle)", fontSize: 11 }} />
+                      <Tooltip cursor={{ fill: "var(--surface-2)", radius: 6 }} content={<VolumeTooltip />} />
+                      <Bar dataKey="quotations" name="Generated" fill="var(--chart-generated)" radius={[4, 4, 0, 0]} animationDuration={800}>
+                        <LabelList dataKey="quotations" content={<PeakLabel peak={peakGenerated} />} />
+                      </Bar>
+                      <Bar dataKey="approved" name="Approved" fill="var(--chart-approved)" radius={[4, 4, 0, 0]} animationDuration={800} animationBegin={120} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}

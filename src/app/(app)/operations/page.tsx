@@ -14,7 +14,6 @@ import {
   RotateCcw,
   ShieldCheck,
   UserCheck,
-  Wrench,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -164,17 +163,9 @@ export default function OperationsPage() {
     <>
       <PageHeader
         title="AI Operations"
-        description="Paste a customer request. Your agents understand it, check stock and draft a quotation. You make the final call."
+        description="Paste a customer message and let your agents prepare a quotation for you to approve."
         actions={
-          phase === "idle" ? (
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-[13px] font-medium text-fg shadow-card">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-              </span>
-              3 agents online
-            </span>
-          ) : (
+          phase !== "idle" && (
             <Button variant="secondary" onClick={reset} disabled={busy}>
               <RotateCcw className="h-4 w-4" aria-hidden /> New request
             </Button>
@@ -183,7 +174,7 @@ export default function OperationsPage() {
       />
 
       {/* Pipeline */}
-      <Card className="mb-6 px-4 py-5 sm:px-8 sm:py-6">
+      <Card className="mb-6 px-4 py-5 sm:px-8">
         <ol className="grid grid-cols-4" aria-label="Agent pipeline">
           {nodes.map((node, i) => {
             const { state, note } = stateOf(node.key);
@@ -219,8 +210,7 @@ export default function OperationsPage() {
                   )}
                 </div>
                 <p className="mt-3 text-[13px] font-semibold text-fg sm:text-sm">{node.label}</p>
-                <p className="hidden text-xs text-muted sm:block">{node.sub}</p>
-                <p
+                                <p
                   className={cn(
                     "mt-1 text-[11px] font-medium sm:text-xs",
                     state === "done" ? tone.text : state === "active" ? tone.text : state === "attention" ? "text-warning" : state === "failed" ? "text-danger" : "text-subtle",
@@ -244,7 +234,7 @@ export default function OperationsPage() {
                 <MessageSquareText className="h-4 w-4 text-primary" aria-hidden /> Customer request
               </span>
             }
-            description="From email, WhatsApp, chat or phone"
+            description="Email, WhatsApp or chat"
           />
           <form
             onSubmit={(e) => {
@@ -321,7 +311,7 @@ export default function OperationsPage() {
               {busy ? "Agents working…" : "Run AI agents"}
             </Button>
 
-            <p className="flex items-start gap-2 rounded-lg bg-primary-soft px-3 py-2.5 text-xs text-fg">
+            <p className="flex items-start gap-2 text-xs text-muted">
               <ShieldCheck className="mt-px h-4 w-4 shrink-0 text-primary" aria-hidden />
               Agents only draft. Nothing reaches the customer until a human approves it.
             </p>
@@ -332,8 +322,8 @@ export default function OperationsPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader
-              title="Execution log"
-              description={activeNode ? activeNode.running : "Every agent step and tool result, in order"}
+              title="Agent steps"
+              description={activeNode ? activeNode.running : "What each agent did"}
               action={
                 phase === "done" ? <Badge tone="success" dot>Completed</Badge>
                 : busy ? <Badge tone="primary"><Loader2 className="h-3 w-3 animate-spin" aria-hidden />Running</Badge>
@@ -385,31 +375,12 @@ export default function OperationsPage() {
 
 function IdlePanel() {
   return (
-    <div className="flex flex-col items-center px-2 py-8 text-center">
-      <div className="flex -space-x-2">
-        {(["support", "inventory", "sales"] as AgentType[]).map((t) => (
-          <div key={t} className="rounded-xl ring-4 ring-surface">
-            <AgentAvatar type={t} size="lg" />
-          </div>
-        ))}
+    <div className="flex flex-col items-center px-2 py-12 text-center">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary">
+        <Play className="h-4 w-4" aria-hidden />
       </div>
-      <p className="mt-5 text-base font-semibold text-fg">Your AI team is ready</p>
-      <p className="mt-1 max-w-sm text-[13px] text-muted">
-        Pick an example or paste a real customer message. Each agent&apos;s reasoning and tool results will appear here as they work.
-      </p>
-      <dl className="mt-7 grid w-full max-w-md grid-cols-3 divide-x divide-border rounded-xl border border-border">
-        {[
-          ["3", "agents online"],
-          ["~3s", "per request"],
-          ["0", "sent unapproved"],
-        ].map(([value, label]) => (
-          <div key={label} className="px-3 py-3">
-            <dt className="sr-only">{label}</dt>
-            <dd className="tabular text-lg font-semibold text-fg">{value}</dd>
-            <dd className="text-[11px] text-muted">{label}</dd>
-          </div>
-        ))}
-      </dl>
+      <p className="mt-3 text-sm font-medium text-fg">Nothing running yet</p>
+      <p className="mt-1 max-w-xs text-[13px] text-muted">Pick an example on the left and press Run. Agent steps will show up here.</p>
     </div>
   );
 }
@@ -424,22 +395,18 @@ function WorkingRow({ agent, label }: { agent: AgentType; label: string }) {
         <p className="mt-0.5 flex items-center gap-2 text-sm font-medium text-fg">
           <Loader2 className={cn("h-3.5 w-3.5 animate-spin", meta.text)} aria-hidden /> {label}
         </p>
-        <div className="mt-3 space-y-2" aria-hidden>
-          <div className="h-2.5 w-3/4 animate-pulse rounded bg-surface-2" />
-          <div className="h-2.5 w-1/2 animate-pulse rounded bg-surface-2" />
-        </div>
       </div>
     </li>
   );
 }
 
 function StepRow({ step, last }: { step: AgentStep; last: boolean }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const meta = agentMeta[step.agent];
   const failed = step.status === "failed";
 
   return (
-    <li className={cn("animate-step-in relative flex gap-4", !last && "pb-6")}>
+    <li className={cn("animate-step-in relative flex gap-4", !last && "pb-5")}>
       {!last && <span className="absolute bottom-0 left-[17px] top-10 w-px bg-border-strong" aria-hidden />}
       <div className="relative">
         <AgentAvatar type={step.agent} />
@@ -453,20 +420,16 @@ function StepRow({ step, last }: { step: AgentStep; last: boolean }) {
           <span className="tabular text-[11px] text-subtle">{(step.durationMs / 1000).toFixed(1)}s</span>
         </div>
         <p className="mt-0.5 text-sm font-medium text-fg">{step.title}</p>
-        <div className="mt-3 overflow-hidden rounded-lg border border-border">
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="flex w-full items-center gap-2 bg-surface-2 px-3 py-2 text-left text-xs font-medium text-muted hover:text-fg cursor-pointer"
-            aria-expanded={open}
-          >
-            <Wrench className="h-3.5 w-3.5" aria-hidden />
-            <span className="font-mono text-fg">{step.tool ?? "reasoning"}</span>
-            <span>result</span>
-            <ChevronDown className={cn("ml-auto h-3.5 w-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
-          </button>
-          {open && <div className="px-3 py-3"><ToolOutput step={step} /></div>}
-        </div>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-fg cursor-pointer"
+          aria-expanded={open}
+        >
+          {open ? "Hide details" : "Show details"}
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} aria-hidden />
+        </button>
+        {open && <div className="mt-2 rounded-lg border border-border px-3 py-3"><ToolOutput step={step} /></div>}
       </div>
     </li>
   );
@@ -574,7 +537,6 @@ function QuotationResult({ quotation, summary, onChange }: { quotation: Quotatio
 
   return (
     <Card className="overflow-hidden">
-      <div className="h-1 bg-gradient-to-r from-[var(--support)] via-[var(--inventory)] to-[var(--sales)]" aria-hidden />
       <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -634,8 +596,7 @@ function QuotationResult({ quotation, summary, onChange }: { quotation: Quotatio
       </div>
 
       {quotation.status === "pending" && (
-        <div className="flex flex-col-reverse gap-2 border-t border-border bg-surface-2/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-end">
-          <p className="mr-auto hidden text-xs text-muted sm:block">Approving releases the quote and reserves stock.</p>
+        <div className="flex flex-col-reverse gap-2 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-end">
           <Button variant="secondary" onClick={() => decide("reject")} loading={busy === "reject"} disabled={!!busy}>Reject</Button>
           <Button onClick={() => decide("approve")} loading={busy === "approve"} disabled={!!busy}>
             {busy !== "approve" && <Check className="h-4 w-4" aria-hidden />} Approve quotation
